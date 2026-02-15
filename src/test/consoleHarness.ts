@@ -62,6 +62,8 @@ function checkInvariants(state: GameState): string[] {
   // Hidden state ranges
   check(!isNaN(state.laborCohesion) && state.laborCohesion >= 0 && state.laborCohesion <= 100,
     `laborCohesion out of range: ${state.laborCohesion}`);
+  check(!isNaN(state.centralBankIndependence) && state.centralBankIndependence >= 0 && state.centralBankIndependence <= 100,
+    `centralBankIndependence out of range: ${state.centralBankIndependence}`);
   check(!isNaN(state.rival.power) && state.rival.power >= 0 && state.rival.power <= 100,
     `rival.power out of range: ${state.rival.power}`);
   check(!isNaN(state.colossus.alignment) && state.colossus.alignment >= 0 && state.colossus.alignment <= 100,
@@ -699,6 +701,12 @@ function test15_PolicyValidation(): void {
   for (const id of counterPolicies) {
     assert(POLICIES.some(p => p.id === id), `Counter policy exists: ${id}`);
   }
+
+  // Check central bank independence policies exist
+  const cbiPolicies = ['central_bank_autonomy', 'monetary_sovereignty_decree', 'interest_rate_override'];
+  for (const id of cbiPolicies) {
+    assert(POLICIES.some(p => p.id === id), `CBI policy exists: ${id}`);
+  }
 }
 
 // ============================
@@ -746,6 +754,52 @@ function test16_BalanceVerification(): void {
 }
 
 // ============================
+// TEST 17: Central Bank Independence Effects
+// ============================
+function test17_CentralBankIndependence(): void {
+  console.log('\n=== TEST 17: Central Bank Independence Effects ===');
+  seedRng(1700);
+
+  // Test: High independence gives finance loyalty boost
+  const stateHigh = createInitialState();
+  stateHigh.centralBankIndependence = 80;
+  const beforeFinanceHigh = stateHigh.blocs.finance.loyalty;
+  const beforeLegitHigh = stateHigh.resources.legitimacy;
+  // Run one turn with no actions
+  processFullTurnImpl(stateHigh, []);
+  const financeDeltaHigh = stateHigh.blocs.finance.loyalty - beforeFinanceHigh;
+  const legitDeltaHigh = stateHigh.resources.legitimacy - beforeLegitHigh;
+  console.log(`  High CBI: finance delta = ${financeDeltaHigh}, legit delta = ${legitDeltaHigh}`);
+  // CBI contributes +1 finance, +1 legitimacy (other systems also affect these)
+  // Just verify CBI contribution is net positive relative to baseline
+  assert(financeDeltaHigh >= 0, 'High CBI: finance loyalty did not drop significantly');
+
+  // Test: Low independence causes finance loyalty drop
+  seedRng(1701);
+  const stateLow = createInitialState();
+  stateLow.centralBankIndependence = 20;
+  const beforeFinanceLow = stateLow.blocs.finance.loyalty;
+  processFullTurnImpl(stateLow, []);
+  const financeDeltaLow = stateLow.blocs.finance.loyalty - beforeFinanceLow;
+  console.log(`  Low CBI: finance delta = ${financeDeltaLow}`);
+  assert(financeDeltaLow < financeDeltaHigh, 'Low CBI: finance loyalty worse than high CBI');
+
+  // Test: Policy changes CBI value (isolated resolveAction)
+  seedRng(1702);
+  const statePolicy = createInitialState();
+  assert(statePolicy.centralBankIndependence === 60, 'CBI starts at 60');
+  resolveAction(statePolicy, { policyId: 'central_bank_autonomy' });
+  assert(statePolicy.centralBankIndependence === 75, 'CBI +15 from Autonomy Act → 75');
+
+  resolveAction(statePolicy, { policyId: 'monetary_sovereignty_decree' });
+  assert(statePolicy.centralBankIndependence === 55, 'CBI -20 from Sovereignty Decree → 55');
+
+  statePolicy.resources.polarization = 25; // meets minPolarization 20
+  resolveAction(statePolicy, { policyId: 'interest_rate_override' });
+  assert(statePolicy.centralBankIndependence === 45, 'CBI -10 from Interest Rate Override → 45');
+}
+
+// ============================
 // RUN ALL TESTS
 // ============================
 console.log('╔══════════════════════════════════════════╗');
@@ -768,6 +822,7 @@ test13_PendingDiscovery();
 test14_CrisisChains();
 test15_PolicyValidation();
 test16_BalanceVerification();
+test17_CentralBankIndependence();
 
 // Reset RNG to non-deterministic mode
 seedRng();

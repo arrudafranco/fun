@@ -57,12 +57,14 @@ export default function PolicyCard({ policy, selected, disabled, effectiveCost, 
             ? 'border-cyan-400 ring-2 ring-cyan-400/50 bg-slate-700'
             : 'border-slate-600/40 bg-slate-800/90'}
           ${disabled
-            ? 'opacity-50 cursor-not-allowed'
+            ? 'opacity-60 grayscale border-slate-600 cursor-not-allowed'
             : 'cursor-pointer hover:border-slate-500/60'}
+          ${!selected && !disabled && 'focus:ring-2 focus:ring-cyan-500'}
         `}
       >
         <div className="flex items-center justify-between gap-2 mb-2">
           <h4 className="text-sm font-semibold text-slate-100 truncate">{policy.name}</h4>
+          {disabled && <span className="text-[10px] text-slate-400 italic shrink-0">Unavailable</span>}
           <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full whitespace-nowrap ${colorClass}`}>
             {policy.category}
           </span>

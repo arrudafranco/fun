@@ -45,3 +45,12 @@
 .animate-narrative-flicker {
   animation: narrative-flicker 1.5s ease-in-out infinite;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-narrative-flicker { animation: none; }
+  .scanlines::after { display: none; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

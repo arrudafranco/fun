@@ -1,73 +1,57 @@
-# React + TypeScript + Vite
+# Miranda Republic
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A political simulation game set in a fictional developing nation. Navigate four years as president, balancing competing factions, managing an economy under pressure, and surviving the machinations of your political rival.
 
-Currently, two official plugins are available:
+**[Play Now](https://arrudafranco.github.io/fun/)**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## About
 
-## React Compiler
+Miranda Republic is a turn-based strategy game where every policy decision ripples through 14 political blocs, from the Banks to the Underworld. Manage your legitimacy, control the national narrative, and keep the Colossus (a powerful foreign superpower) from losing patience. With 46 policies, dynamic events, crisis chains, and 10 possible endings, no two playthroughs are alike.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the ESLint configuration
+- **Framework:** React 19
+- **State Management:** Zustand 5
+- **Styling:** Tailwind CSS v4
+- **Build Tool:** Vite
+- **Language:** TypeScript
+- **Testing:** Custom deterministic test harness with seedable PRNG (283 tests, including 1500-seed fuzz across 3 difficulty levels)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Local Development
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+git clone https://github.com/arrudafranco/fun.git
+cd fun
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The game runs at `http://localhost:5173` by default.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Project Structure
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+src/
+  components/   # React UI components
+  data/         # Policy definitions, bloc data, events
+  engine/       # Game logic (rival AI, economy, congress, narrative)
+  hooks/        # Custom React hooks
+  types/        # TypeScript type definitions
+  utils/        # Seedable RNG, helpers
+  test/         # Deterministic test harness
+```
+
+## Technical Highlights
+
+This project demonstrates several software engineering skills beyond the tech stack itself:
+
+- **Game engine architecture.** Pure-function engine with clean separation between simulation logic, state management, and UI. Twelve engine modules (rival AI, congressional math, narrative phase, crisis chains, etc.) compose without side effects.
+- **Deterministic testing with seedable PRNG.** All randomness routes through a seedable Mulberry32 PRNG, enabling exact reproducibility. The test harness runs 1,500 fuzz simulations (500 seeds x 3 difficulties) asserting invariants across ~72,000 game ticks, with any failure producing a deterministic repro.
+- **Complex system balancing.** 14 interacting blocs with sensitivity matrices, ripple effects, polarization feedback loops, and a multi-phase turn structure. Difficulty tiers are tuned via parameterized configs, validated by automated balance assertions.
+- **Accessibility-first UI.** Full ARIA support (roles, labels, live regions), semantic HTML, keyboard navigation with focus traps in modals, skip links, `prefers-reduced-motion` support, and high-contrast color choices.
+- **Save/load with forward migration.** LocalStorage persistence with migration logic for schema evolution, ensuring older saves load cleanly as the game adds new mechanics.
+- **AI-assisted development.** Built with Claude Code as a force multiplier for architecture, implementation, testing, and review. Effective AI-assisted development, from prompt engineering to iterative code review, is itself a transferable engineering skill.
+
+## Credits
+
+Created by Gustavo Arruda Franco.

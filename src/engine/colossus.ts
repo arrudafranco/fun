@@ -40,6 +40,32 @@ export function processColossusTurn(state: GameState): void {
 }
 
 /**
+ * Process Central Bank Independence effects each turn.
+ * High independence (>=70): Finance +1, Legitimacy +1, inflation drifts up +1 every 2 turns.
+ * Low independence (<30): Finance -2, inflation +1/turn, capital +3/turn.
+ * Mid range (30-69): No automatic effects.
+ */
+export function processCentralBankTurn(state: GameState): void {
+  const cbi = state.centralBankIndependence;
+
+  if (cbi >= 70) {
+    // High independence: stable banks, limited monetary tools
+    state.blocs.finance.loyalty = clamp(state.blocs.finance.loyalty + 1, 0, 100);
+    state.resources.legitimacy = clamp(state.resources.legitimacy + 1, 0, 100);
+    // Inflation drifts up every 2 turns (odd turns only)
+    if (state.turn % 2 === 1) {
+      state.resources.inflation = clamp(state.resources.inflation + 1, 0, 30);
+    }
+  } else if (cbi < 30) {
+    // Low independence: risky but more monetary levers
+    state.blocs.finance.loyalty = clamp(state.blocs.finance.loyalty - 2, 0, 100);
+    state.resources.inflation = clamp(state.resources.inflation + 1, 0, 30);
+    state.resources.capital = clamp(state.resources.capital + 3, 0, 999);
+  }
+  // Mid range (30-69): no automatic effects
+}
+
+/**
  * Calculate trade income based on Colossus trade dependency.
  */
 export function calculateTradeIncome(state: GameState): number {

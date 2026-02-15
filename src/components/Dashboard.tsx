@@ -115,6 +115,9 @@ export default function Dashboard() {
 
   return (
     <div className="h-screen flex flex-col bg-slate-950 text-slate-100 scanlines">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:top-2 focus:left-2 focus:px-4 focus:py-2 focus:bg-cyan-700 focus:text-white focus:rounded">
+        Skip to main content
+      </a>
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-3 bg-slate-900 border-b border-slate-700/50 flex-shrink-0">
         <h1 className="text-lg font-bold tracking-wide font-pixel title-glow">MIRANDA REPUBLIC</h1>
@@ -136,7 +139,7 @@ export default function Dashboard() {
       {/* Body */}
       <div className="flex flex-1 overflow-hidden">
         <ResourceSidebar />
-        <main className="flex-1 overflow-y-auto">
+        <main id="main-content" className="flex-1 overflow-y-auto">
           <BlocGrid />
           <NewsLog />
           {phase === 'action' && <PolicyPicker />}

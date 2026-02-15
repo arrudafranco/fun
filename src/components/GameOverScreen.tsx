@@ -104,6 +104,7 @@ export default function GameOverScreen() {
   const maxTurns = useGameStore(s => s.maxTurns);
   const resources = useGameStore(s => s.resources);
   const laborCohesion = useGameStore(s => s.laborCohesion);
+  const centralBankIndependence = useGameStore(s => s.centralBankIndependence);
   const colossus = useGameStore(s => s.colossus);
   const rival = useGameStore(s => s.rival);
   const initGame = useGameStore(s => s.initGame);
@@ -143,6 +144,7 @@ export default function GameOverScreen() {
     { label: 'Polarization', value: resources.polarization, colorClass: statColorInverse(resources.polarization, 40, 70) },
     { label: 'Rival Power', value: rival.power, colorClass: statColorInverse(rival.power, 30, 60) },
     { label: 'Labor Cohesion (hidden)', value: laborCohesion, colorClass: statColor(laborCohesion, 60, 30) },
+    { label: 'Central Bank (hidden)', value: centralBankIndependence, colorClass: statColor(centralBankIndependence, 60, 30) },
     { label: 'Colossus Alignment', value: colossus.alignment, colorClass: statColorInverse(colossus.alignment, 50, 75) },
   ];
 

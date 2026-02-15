@@ -17,6 +17,10 @@ const STEPS: TutorialStep[] = [
     body: 'The sidebar tracks your political resources. Legitimacy keeps you in power. Capital funds your policies. Narrative shapes public opinion. Polarization makes everything harder. Keep an eye on all of them.',
   },
   {
+    title: 'The Sidebar',
+    body: "Below your resources, you'll find three key panels. The Central Bank tracks how independent Miranda's monetary policy is... high independence pleases the Banks but limits your economic tools. The Colossus is the superpower watching Miranda's every move. And Congress tracks how much support you have in the legislature.",
+  },
+  {
     title: 'Blocs',
     body: 'Miranda\'s power blocs each have loyalty (how much they support you) and power (how much influence they wield). Keep the right blocs happy, or face the consequences.',
   },

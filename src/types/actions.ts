@@ -1,4 +1,4 @@
-import type { BlocEffectMap } from './blocs';
+import type { BlocEffectMap, BlocId } from './blocs';
 import type { ResourceState } from './resources';
 import type { GameState } from './game';
 
@@ -34,6 +34,7 @@ export interface PolicyEffects {
   blocs: BlocEffectMap;
   resources?: Partial<ResourceState>;
   laborCohesion?: number;
+  centralBankIndependence?: number;
   rivalPower?: number;
   discovery?: DiscoveryEffect;
   delayed?: DelayedEffect;

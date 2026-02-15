@@ -100,7 +100,7 @@ export const EVENT_POOL: GameEvent[] = [
       {
         id: 'raise_rates',
         label: 'Raise interest rates',
-        tooltip: 'Stabilize the currency. The cost: growth, jobs, and popularity.',
+        tooltip: 'Stabilize the currency. Growth, jobs, and popularity take a hit.',
         effects: {
           resources: { inflation: -3, capital: -15 },
           blocs: { finance: { loyalty: +10 }, labor: { loyalty: -10 }, industry: { loyalty: -5 } },

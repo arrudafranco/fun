@@ -11,7 +11,7 @@ import { STARTING_RIVAL } from '../types/rival';
 import { createInitialBlocStates } from '../data/blocs';
 import { POLICIES } from '../data/policies';
 import { generateRivalIdentity, processRivalTurn } from './rival';
-import { processColossusTurn, calculateTradeIncome } from './colossus';
+import { processColossusTurn, processCentralBankTurn, calculateTradeIncome } from './colossus';
 import { calculateSeatShares } from './congress';
 import { applyNarrativePhase } from './narrative';
 import { processLaborCohesionTurn, getEffectiveLaborPower } from './laborCohesion';
@@ -209,6 +209,13 @@ function resolveAction(state: GameState, action: ActionChoice): void {
     );
   }
 
+  // Apply central bank independence
+  if (policy.effects.centralBankIndependence) {
+    state.centralBankIndependence = clamp(
+      state.centralBankIndependence + policy.effects.centralBankIndependence, 0, 100
+    );
+  }
+
   // Apply other conditional effects
   if (conditional) {
     if (conditional.blocs) {
@@ -381,6 +388,7 @@ function submitActionsImpl(state: GameState, actions: ActionChoice[]): void {
   state.phase = 'reaction';
   processRivalTurn(state);
   processColossusTurn(state);
+  processCentralBankTurn(state);
   processDelayedEffects(state);
   processDiscoveryTick(state);
   processCrisisTick(state);
@@ -478,6 +486,7 @@ function processFullTurnImpl(state: GameState, actions: ActionChoice[]): void {
   state.phase = 'reaction';
   processRivalTurn(state);
   processColossusTurn(state);
+  processCentralBankTurn(state);
   processDelayedEffects(state);
   processDiscoveryTick(state);
   processCrisisTick(state);
@@ -641,6 +650,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
       if (!saved.activeCrises) saved.activeCrises = [];
       if (!saved.difficulty) saved.difficulty = 'standard';
       if (!saved.crisisEventQueue) saved.crisisEventQueue = [];
+      if (saved.centralBankIndependence === undefined) saved.centralBankIndependence = 60;
+      if (saved.unionLoyaltyAbove70Streak === undefined) saved.unionLoyaltyAbove70Streak = 0;
+      if (saved.highPolarizationStreak === undefined) saved.highPolarizationStreak = 0;
       set(saved as GameState);
       return true;
     } catch {

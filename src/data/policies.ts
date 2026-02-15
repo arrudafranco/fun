@@ -1056,4 +1056,68 @@ export const POLICIES: Policy[] = [
       },
     },
   },
+
+  // === CENTRAL BANK INDEPENDENCE POLICIES ===
+  {
+    id: 'central_bank_autonomy',
+    name: 'Central Bank Autonomy Act',
+    tooltip: 'Give the central bank more independence. The Banks love it. Everyone else wonders who elected the bankers.',
+    category: 'institutional',
+    minPolarization: 0,
+    maxPolarization: 70,
+    capitalCost: 10,
+    centrist: true,
+    effects: {
+      blocs: {
+        finance: { loyalty: +10 },
+        labor:   { loyalty: -5 },
+        artists: { loyalty: -5 },
+      },
+      resources: {
+        legitimacy: +3,
+      },
+      centralBankIndependence: +15,
+    },
+  },
+  {
+    id: 'monetary_sovereignty_decree',
+    name: 'Monetary Sovereignty Decree',
+    tooltip: 'Take back control of monetary policy. The Banks are furious. The Factories are cautiously optimistic.',
+    category: 'institutional',
+    minPolarization: 0,
+    maxPolarization: 80,
+    capitalCost: 15,
+    centrist: false,
+    effects: {
+      blocs: {
+        finance:  { loyalty: -15 },
+        industry: { loyalty: +5 },
+        labor:    { loyalty: +10 },
+      },
+      resources: {
+        narrative: +3,
+      },
+      centralBankIndependence: -20,
+    },
+  },
+  {
+    id: 'interest_rate_override',
+    name: 'Interest Rate Override',
+    tooltip: 'Override the central bank\'s rate decision. Inflation drops. Institutional credibility drops faster.',
+    category: 'economic',
+    minPolarization: 20,
+    maxPolarization: 100,
+    capitalCost: 5,
+    centrist: false,
+    effects: {
+      blocs: {
+        finance:    { loyalty: -10 },
+        mainStreet: { loyalty: +5 },
+      },
+      resources: {
+        inflation: -3,
+      },
+      centralBankIndependence: -10,
+    },
+  },
 ];

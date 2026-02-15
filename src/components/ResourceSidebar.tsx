@@ -28,6 +28,7 @@ const RESOURCE_DEFS: ResourceDef[] = [
 
 export default function ResourceSidebar() {
   const resources = useResourceValues();
+  const centralBankIndependence = useGameStore(s => s.centralBankIndependence);
 
   return (
     <aside className="w-56 flex-shrink-0 bg-slate-900 border-r border-slate-700/50 p-4 flex flex-col gap-3 overflow-y-auto">
@@ -62,6 +63,34 @@ export default function ResourceSidebar() {
           </Tooltip>
         );
       })}
+
+      <hr className="border-slate-700/50 my-1" />
+
+      {/* Central Bank Independence */}
+      <div className="rounded-xl p-3 bg-slate-800 border border-teal-400/30 shadow-md shadow-teal-900/20">
+        <h3 className="text-xs font-semibold text-teal-300 uppercase tracking-wider mb-2 font-pixel">
+          Central Bank
+        </h3>
+        <Tooltip text="How independent is the central bank from your government. High independence stabilizes Banks but limits your monetary tools.">
+          <div className="flex justify-between text-xs text-slate-400 mb-1">
+            <span id="cbi-label">Independence</span>
+            <span>{centralBankIndependence}</span>
+          </div>
+        </Tooltip>
+        <div
+          className="h-2 bg-slate-700 rounded-full overflow-hidden"
+          role="progressbar"
+          aria-valuenow={centralBankIndependence}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-labelledby="cbi-label"
+        >
+          <div
+            className="h-full rounded-full transition-all duration-500 bg-teal-300"
+            style={{ width: `${centralBankIndependence}%` }}
+          />
+        </div>
+      </div>
 
       <hr className="border-slate-700/50 my-1" />
       <ColossusPanel />
