@@ -83,7 +83,7 @@ export default function PolicyPicker() {
           Choose Actions ({selected.length}/2)
         </h3>
         <p className="text-xs text-slate-500 mb-3">
-          Select up to 2 policies, then end your turn.
+          Select up to 2 policies, then end your turn. You can also skip by ending with no selections.
         </p>
       </div>
 

@@ -19,7 +19,7 @@ export const CRISIS_CHAINS: CrisisChain[] = [
   {
     id: 'media_scandal',
     stages: ['crisis_leak', 'crisis_investigation', 'crisis_verdict'],
-    trigger: (state) => state.pendingDiscoveries.length > 0 || state.blocs.media.loyalty > 65,
+    trigger: (state) => state.pendingDiscoveries.length > 0 || state.blocs.media.loyalty < 35,
   },
   {
     id: 'colossus_pressure',

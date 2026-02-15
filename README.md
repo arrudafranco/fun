@@ -4,6 +4,8 @@ A political simulation game set in a fictional developing nation. Navigate four 
 
 **[Play Now](https://arrudafranco.github.io/fun/)**
 
+![Miranda Republic gameplay screenshot](screenshot.png)
+
 ## About
 
 Miranda Republic is a turn-based strategy game where every policy decision ripples through 14 political blocs, from the Banks to the Underworld. Manage your legitimacy, control the national narrative, and keep the Colossus (a powerful foreign superpower) from losing patience. With 46 policies, dynamic events, crisis chains, and 10 possible endings, no two playthroughs are alike.
