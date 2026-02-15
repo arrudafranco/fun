@@ -43,17 +43,22 @@ src/
   test/         # Deterministic test harness
 ```
 
-## Technical Highlights
+## How This Was Built
 
-This project demonstrates several software engineering skills beyond the tech stack itself:
+Miranda Republic was built collaboratively with [Claude Code](https://claude.ai/code) (Anthropic's AI coding tool). Here's what each side contributed:
 
-- **Game engine architecture.** Pure-function engine with clean separation between simulation logic, state management, and UI. Eleven engine modules (rival AI, congressional math, narrative phase, crisis chains, etc.) compose without side effects.
-- **Deterministic testing with seedable PRNG.** All randomness routes through a seedable Mulberry32 PRNG, enabling exact reproducibility. The test harness runs 1,500 fuzz simulations (500 seeds x 3 difficulties) asserting invariants across ~72,000 game ticks, with any failure producing a deterministic repro.
-- **Complex system balancing.** 14 interacting blocs with sensitivity matrices, ripple effects, polarization feedback loops, and a multi-phase turn structure. Difficulty tiers are tuned via parameterized configs, validated by automated balance assertions.
-- **Accessibility-first UI.** Full ARIA support (roles, labels, live regions), semantic HTML, keyboard navigation with focus traps in modals, skip links, `prefers-reduced-motion` support, and high-contrast color choices.
-- **Save/load with forward migration.** LocalStorage persistence with migration logic for schema evolution, ensuring older saves load cleanly as the game adds new mechanics.
-- **AI-assisted development.** Built with Claude Code as a force multiplier for architecture, implementation, testing, and review. Effective AI-assisted development, from prompt engineering to iterative code review, is itself a transferable engineering skill.
+**My role (Gustavo):** Game concept and setting, mechanical design (bloc interactions, rival system, crisis chains, difficulty tuning), UX decisions, balance priorities, and iterative review of every feature before it shipped. I directed the architecture through detailed implementation plans and caught issues Claude missed (accessibility gaps, nested tooltip bugs, writing style violations).
+
+**Claude's role:** Implementation of the engine modules, React components, test harness, and build tooling. Claude translated design specs into working TypeScript, wrote the seedable PRNG testing infrastructure, and handled the mechanical details of state management, save migration, and CSS.
+
+### Technical Details
+
+- **Game engine architecture.** Pure-function engine with eleven modules (rival AI, congressional math, narrative phase, crisis chains, etc.) composing without side effects.
+- **Deterministic testing with seedable PRNG.** All randomness routes through a seedable Mulberry32 PRNG. The test harness runs 1,500 fuzz simulations (500 seeds x 3 difficulties) asserting invariants across ~72,000 game ticks, with any failure producing a deterministic repro.
+- **Complex system balancing.** 14 interacting blocs with sensitivity matrices, ripple effects, polarization feedback loops, and a multi-phase turn structure. Difficulty tiers tuned via parameterized configs, validated by automated balance assertions.
+- **Accessibility.** ARIA roles and labels, semantic HTML, keyboard navigation with focus traps in modals, `prefers-reduced-motion` support, and high-contrast color choices.
+- **Save/load with forward migration.** LocalStorage persistence with migration logic for schema evolution, ensuring older saves load cleanly as new mechanics are added.
 
 ## Credits
 
-Created by Gustavo Arruda Franco.
+Created by Gustavo Arruda Franco, with Claude Code (Anthropic).
