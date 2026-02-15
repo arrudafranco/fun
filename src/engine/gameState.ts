@@ -677,6 +677,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       if (saved.unionLoyaltyAbove70Streak === undefined) saved.unionLoyaltyAbove70Streak = 0;
       if (saved.highPolarizationStreak === undefined) saved.highPolarizationStreak = 0;
       if (saved.congress && saved.congress.friendlyMajority === undefined) saved.congress.friendlyMajority = false;
+      if (saved.rival && saved.rival.lastAction === undefined) saved.rival.lastAction = '';
+      if (saved.rival && saved.rival.powerDelta === undefined) saved.rival.powerDelta = 0;
       set(saved as GameState);
       return true;
     } catch {

@@ -29,6 +29,10 @@ const STEPS: TutorialStep[] = [
     body: 'Miranda\'s power blocs each have loyalty (how much they support you) and power (how much influence they wield). Keep the right blocs happy, or face the consequences.',
   },
   {
+    title: 'The Rival',
+    body: 'Your political rival is not sitting idle. Each turn, they act against you. Watch their panel for what they did and how fast their power is growing. If they trigger Gridlock or a Culture War, you will see badges with countdowns and their effects. Keep their power below 100 or they win.',
+  },
+  {
     title: 'Your Turn',
     body: 'Each turn, a news event may occur. Then you choose policies to enact. Hover over a policy card to see its full effects. After that, the blocs, the Rival, and the Colossus react. Choose wisely... every action has consequences.',
   },

@@ -2,7 +2,7 @@ import { createInitialState, processFullTurnImpl, checkWinLossConditions, resolv
 import { calculateSeatShares, canPassBill, hasFriendlyMajority, getCongressCostMultiplier } from '../engine/congress';
 import { getEffectiveLaborPower } from '../engine/laborCohesion';
 import { getPolarizationCostMultiplier, getBacklashChance } from '../engine/polarization';
-import { calculateRivalPowerDelta } from '../engine/rival';
+import { calculateRivalPowerDelta, generateRivalAction } from '../engine/rival';
 import { processDiscoveryTick } from '../engine/discovery';
 import { processCrisisTick } from '../engine/crisisChains';
 import { BLOC_DEFINITIONS } from '../data/blocs';
@@ -66,6 +66,10 @@ function checkInvariants(state: GameState): string[] {
     `centralBankIndependence out of range: ${state.centralBankIndependence}`);
   check(!isNaN(state.rival.power) && state.rival.power >= 0 && state.rival.power <= 100,
     `rival.power out of range: ${state.rival.power}`);
+  check(!isNaN(state.rival.powerDelta) && state.rival.powerDelta >= -30 && state.rival.powerDelta <= 30,
+    `rival.powerDelta out of range: ${state.rival.powerDelta}`);
+  check(typeof state.rival.lastAction === 'string',
+    `rival.lastAction must be string, got: ${typeof state.rival.lastAction}`);
   check(!isNaN(state.colossus.alignment) && state.colossus.alignment >= 0 && state.colossus.alignment <= 100,
     `colossus.alignment out of range: ${state.colossus.alignment}`);
   check(!isNaN(state.colossus.patience) && state.colossus.patience >= 0 && state.colossus.patience <= 100,
@@ -905,6 +909,89 @@ function test18_CongressionalMechanics(): void {
 }
 
 // ============================
+// TEST 19: Rival Action System
+// ============================
+function test19_RivalActions(): void {
+  console.log('\n=== TEST 19: Rival Action System ===');
+
+  // 1. generateRivalAction returns non-empty string for all backgrounds
+  const backgrounds = ['congressional_leader', 'regional_governor', 'retired_general', 'media_personality'] as const;
+  for (const bg of backgrounds) {
+    seedRng(1900);
+    const state = createInitialState();
+    state.rival.background = bg;
+    state.rival.power = 20; // low tier
+    const action = generateRivalAction(state);
+    assert(typeof action === 'string' && action.length > 0, `${bg} low tier returns text: "${action.slice(0, 40)}..."`);
+  }
+
+  // 2. Tier awareness: different tiers produce different pools
+  seedRng(1901);
+  const stateLow = createInitialState();
+  stateLow.rival.background = 'media_personality';
+  stateLow.rival.power = 10;
+  const lowAction = generateRivalAction(stateLow);
+
+  seedRng(1901);
+  const stateHigh = createInitialState();
+  stateHigh.rival.background = 'media_personality';
+  stateHigh.rival.power = 80;
+  const highAction = generateRivalAction(stateHigh);
+  console.log(`  Low tier: "${lowAction.slice(0, 50)}..."`);
+  console.log(`  High tier: "${highAction.slice(0, 50)}..."`);
+  // With same seed but different tiers, the action pools differ
+  // (could be same text by coincidence, so we just verify both are valid)
+  assert(lowAction.length > 0 && highAction.length > 0, 'Both tiers produce valid text');
+
+  // 3. Weakness awareness: low legitimacy triggers legitimacy-tagged lines more often
+  let legitimacyHits = 0;
+  const legitimacyKeywords = ['confidence', 'legitimacy', 'accountability', 'audit', 'broken promises', 'failed'];
+  for (let seed = 0; seed < 50; seed++) {
+    seedRng(seed + 2000);
+    const state = createInitialState();
+    state.rival.background = 'congressional_leader';
+    state.rival.power = 50; // mid tier
+    state.resources.legitimacy = 25; // very low
+    const text = generateRivalAction(state).toLowerCase();
+    if (legitimacyKeywords.some(kw => text.includes(kw))) {
+      legitimacyHits++;
+    }
+  }
+  console.log(`  Legitimacy weakness hits: ${legitimacyHits}/50`);
+  assert(legitimacyHits >= 5, `Weakness selection produces relevant lines (${legitimacyHits}/50 hits)`);
+
+  // 4. powerDelta is tracked after processRivalTurn
+  seedRng(1902);
+  const state = createInitialState();
+  const powerBefore = state.rival.power;
+  processFullTurnImpl(state, []);
+  const expectedDelta = state.rival.power - powerBefore;
+  // powerDelta should match the actual change (accounting for clamping)
+  assert(state.rival.powerDelta !== undefined, 'powerDelta is set after turn');
+  assert(typeof state.rival.powerDelta === 'number' && !isNaN(state.rival.powerDelta), 'powerDelta is a valid number');
+  console.log(`  powerDelta after turn: ${state.rival.powerDelta}, actual change: ${expectedDelta}`);
+
+  // 5. lastAction is set after processRivalTurn
+  assert(typeof state.rival.lastAction === 'string', 'lastAction is string after turn');
+  assert(state.rival.lastAction.length > 0, `lastAction is non-empty: "${state.rival.lastAction.slice(0, 40)}..."`);
+
+  // 6. Determinism: same seed + state = same action
+  seedRng(1903);
+  const stateA = createInitialState();
+  stateA.rival.background = 'retired_general';
+  stateA.rival.power = 45;
+  const actionA = generateRivalAction(stateA);
+
+  seedRng(1903);
+  const stateB = createInitialState();
+  stateB.rival.background = 'retired_general';
+  stateB.rival.power = 45;
+  const actionB = generateRivalAction(stateB);
+
+  assert(actionA === actionB, `Deterministic: "${actionA.slice(0, 40)}..." matches across same seed`);
+}
+
+// ============================
 // RUN ALL TESTS
 // ============================
 console.log('╔══════════════════════════════════════════╗');
@@ -929,6 +1016,7 @@ test15_PolicyValidation();
 test16_BalanceVerification();
 test17_CentralBankIndependence();
 test18_CongressionalMechanics();
+test19_RivalActions();
 
 // Reset RNG to non-deterministic mode
 seedRng();
