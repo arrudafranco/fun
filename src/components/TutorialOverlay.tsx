@@ -179,11 +179,14 @@ export default function TutorialOverlay({ forceShow, onClose, onMobileTabChange 
     if (forceShow) {
       setVisible(true);
       setStep(0);
+      // Expand all collapsible sections so tutorial spotlights can find targets
+      window.dispatchEvent(new Event('tutorial-expand-sections'));
       return;
     }
     try {
       if (!localStorage.getItem(TUTORIAL_KEY)) {
         setVisible(true);
+        window.dispatchEvent(new Event('tutorial-expand-sections'));
       }
     } catch {
       // localStorage unavailable
@@ -280,6 +283,9 @@ export default function TutorialOverlay({ forceShow, onClose, onMobileTabChange 
     } catch {
       // ignore
     }
+    // Reset scroll position so the page isn't stuck mid-scroll from spotlight navigation
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) mainContent.scrollTop = 0;
     onClose?.();
   }, [onClose]);
 

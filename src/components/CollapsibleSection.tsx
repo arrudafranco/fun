@@ -40,6 +40,15 @@ export default function CollapsibleSection({
     } catch { /* ignore */ }
   }, [id, collapsed]);
 
+  // Expand when tutorial requests it
+  useEffect(() => {
+    function handleTutorialExpand() {
+      setCollapsed(false);
+    }
+    window.addEventListener('tutorial-expand-sections', handleTutorialExpand);
+    return () => window.removeEventListener('tutorial-expand-sections', handleTutorialExpand);
+  }, []);
+
   return (
     <div className={className} {...(tutorialAttr ? { 'data-tutorial': tutorialAttr } : {})}>
       <div className="flex items-center gap-2 px-4 pt-4 pb-2">
