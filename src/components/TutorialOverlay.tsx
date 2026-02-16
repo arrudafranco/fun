@@ -210,14 +210,7 @@ export default function TutorialOverlay({ forceShow, onClose, onMobileTabChange 
       return;
     }
 
-    function updatePosition() {
-      const el = document.querySelector(`[data-tutorial="${targetAttr}"]`);
-      if (!el) {
-        setSpotRect(null);
-        setCardPos(null);
-        return;
-      }
-
+    function measureAndPosition(el: Element) {
       const rect = el.getBoundingClientRect();
       const newRect = {
         top: rect.top,
@@ -233,15 +226,41 @@ export default function TutorialOverlay({ forceShow, onClose, onMobileTabChange 
       setCardPos(getCardPosition(newRect, cardW, cardH));
     }
 
+    function updatePosition() {
+      const el = document.querySelector(`[data-tutorial="${targetAttr}"]`);
+      if (!el) {
+        setSpotRect(null);
+        setCardPos(null);
+        return;
+      }
+
+      // Scroll target into view if off-screen, then measure after scroll settles
+      const rect = el.getBoundingClientRect();
+      const inViewport = rect.top >= 0 && rect.bottom <= window.innerHeight;
+      if (!inViewport) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Re-measure after scroll animation settles
+        setTimeout(() => measureAndPosition(el), 350);
+      } else {
+        measureAndPosition(el);
+      }
+    }
+
     // Small delay to let tab switch render
     const timer = setTimeout(updatePosition, 100);
-    window.addEventListener('resize', updatePosition);
-    window.addEventListener('scroll', updatePosition, { capture: true });
+    // On resize/scroll, just re-measure without re-scrolling
+    function onResizeOrScroll() {
+      const el = document.querySelector(`[data-tutorial="${targetAttr}"]`);
+      if (!el) { setSpotRect(null); setCardPos(null); return; }
+      measureAndPosition(el);
+    }
+    window.addEventListener('resize', onResizeOrScroll);
+    window.addEventListener('scroll', onResizeOrScroll, { capture: true });
 
     return () => {
       clearTimeout(timer);
-      window.removeEventListener('resize', updatePosition);
-      window.removeEventListener('scroll', updatePosition, { capture: true });
+      window.removeEventListener('resize', onResizeOrScroll);
+      window.removeEventListener('scroll', onResizeOrScroll, { capture: true });
     };
   }, [visible, step, isMobile, onMobileTabChange]);
 
