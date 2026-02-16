@@ -36,6 +36,18 @@ const STEPS: TutorialStep[] = [
     title: 'Your Turn',
     body: 'Each turn, a news event may occur. Then you choose policies to enact. Hover over a policy card to see its full effects. After that, the blocs, the Rival, and the Colossus react. Choose wisely... every action has consequences.',
   },
+  {
+    title: 'Policy Categories',
+    body: 'Policies are organized by category (Economic, Labor, Security, and more). Use the tabs above the policy grid to filter. Some policies are locked at the start and unlock as your government grows... through time, relationships, or the political climate. Locked cards show hints about what you need.',
+  },
+  {
+    title: 'Backroom Deals',
+    body: 'Some backroom policies let you choose which bloc to target. When you select one, a modal will ask you to pick a bloc. That bloc receives a direct loyalty bonus. Useful for shoring up wavering allies, but be careful. The discovery risk is real.',
+  },
+  {
+    title: 'Turn Reports',
+    body: 'After your turn ends, you may see a brief report of what happened across Miranda. These are narrative snapshots, not exhaustive summaries. Pay attention to what the Rival is doing and any crises unfolding. Or press Continue to skip ahead.',
+  },
 ];
 
 interface TutorialOverlayProps {

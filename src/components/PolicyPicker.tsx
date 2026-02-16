@@ -1,12 +1,36 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useGameStore } from '../hooks/useGameStore';
 import { POLICIES } from '../data/policies';
 import { getPolarizationCostMultiplier } from '../engine/polarization';
 import { getCongressCostMultiplier } from '../engine/congress';
-import type { ActionChoice } from '../types/actions';
+import type { ActionChoice, ActionCategory } from '../types/actions';
 import type { BlocId } from '../types/blocs';
 import PolicyCard from './PolicyCard';
 import BlocTargetModal from './BlocTargetModal';
+
+const CATEGORY_TAB_COLORS: Record<string, string> = {
+  economic: 'border-emerald-400 text-emerald-300',
+  labor: 'border-sky-400 text-sky-300',
+  security: 'border-rose-400 text-rose-300',
+  diplomatic: 'border-teal-400 text-teal-300',
+  institutional: 'border-amber-400 text-amber-300',
+  rhetoric: 'border-orange-400 text-orange-300',
+  backroom: 'border-violet-400 text-violet-300',
+};
+
+const CATEGORY_ORDER: ActionCategory[] = [
+  'economic', 'labor', 'security', 'diplomatic', 'institutional', 'rhetoric', 'backroom',
+];
+
+const CATEGORY_LABELS: Record<string, string> = {
+  economic: 'Economic',
+  labor: 'Labor',
+  security: 'Security',
+  diplomatic: 'Diplomatic',
+  institutional: 'Institutional',
+  rhetoric: 'Rhetoric',
+  backroom: 'Backroom',
+};
 
 function computeEffectiveCost(
   policy: typeof POLICIES[number],
@@ -23,15 +47,21 @@ function computeEffectiveCost(
   return Math.round(policy.capitalCost * costMultiplier * gridlockMultiplier * syndicateDiscount * congressMultiplier);
 }
 
+type CategoryFilter = 'all' | ActionCategory;
+
 export default function PolicyPicker() {
   const resources = useGameStore(s => s.resources);
   const blocs = useGameStore(s => s.blocs);
   const rival = useGameStore(s => s.rival);
   const friendlyMajority = useGameStore(s => s.congress.friendlyMajority);
   const submitActions = useGameStore(s => s.submitActions);
+  const unlockedPolicyIds = useGameStore(s => s.unlockedPolicyIds);
+  const newlyUnlockedPolicyIds = useGameStore(s => s.newlyUnlockedPolicyIds);
 
   const [selected, setSelected] = useState<ActionChoice[]>([]);
   const [pendingBlocPolicy, setPendingBlocPolicy] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<CategoryFilter>('all');
+  const tabListRef = useRef<HTMLDivElement>(null);
 
   // Calculate total committed capital
   const committedCapital = selected.reduce((sum, sel) => {
@@ -40,17 +70,28 @@ export default function PolicyPicker() {
     return sum + computeEffectiveCost(p, resources.polarization, rival.gridlockCountdown, blocs.syndicate.loyalty, friendlyMajority);
   }, 0);
 
-  function isPolicyDisabled(policy: typeof POLICIES[number]): boolean {
-    // Polarization range check
-    if (resources.polarization < policy.minPolarization || resources.polarization > policy.maxPolarization) return true;
-    // Syndicate loyalty requirement
-    if (policy.requiresSyndicateLoyalty !== undefined && blocs.syndicate.loyalty < policy.requiresSyndicateLoyalty) return true;
-    // Congressional majority requirement
-    if (policy.requiresMajority && !friendlyMajority) return true;
-    // Capital check (remaining after committed)
+  function getDisabledReason(policy: typeof POLICIES[number]): string | null {
+    if (resources.polarization < policy.minPolarization) {
+      return `Needs polarization ${policy.minPolarization}+`;
+    }
+    if (resources.polarization > policy.maxPolarization) {
+      return `Max polarization ${policy.maxPolarization}`;
+    }
+    if (policy.requiresSyndicateLoyalty !== undefined && blocs.syndicate.loyalty < policy.requiresSyndicateLoyalty) {
+      return `Needs Underworld loyalty ${policy.requiresSyndicateLoyalty}+`;
+    }
+    if (policy.requiresMajority && !friendlyMajority) {
+      return 'Needs majority';
+    }
     const cost = computeEffectiveCost(policy, resources.polarization, rival.gridlockCountdown, blocs.syndicate.loyalty, friendlyMajority);
-    if (resources.capital - committedCapital < cost) return true;
-    return false;
+    if (resources.capital - committedCapital < cost) {
+      return 'Too expensive';
+    }
+    return null;
+  }
+
+  function isPolicyDisabled(policy: typeof POLICIES[number]): boolean {
+    return getDisabledReason(policy) !== null;
   }
 
   function handleToggle(policyId: string) {
@@ -82,6 +123,77 @@ export default function PolicyPicker() {
     setSelected([]);
   }
 
+  // Category counts (only count unlocked policies)
+  const categoryCounts: Record<string, { unlocked: number; total: number }> = {};
+  for (const cat of CATEGORY_ORDER) {
+    const inCat = POLICIES.filter(p => p.category === cat);
+    const unlocked = inCat.filter(p => unlockedPolicyIds.includes(p.id));
+    categoryCounts[cat] = { unlocked: unlocked.length, total: inCat.length };
+  }
+  const allUnlocked = POLICIES.filter(p => unlockedPolicyIds.includes(p.id)).length;
+
+  // Filter and sort policies
+  const filteredPolicies = activeTab === 'all'
+    ? POLICIES
+    : POLICIES.filter(p => p.category === activeTab);
+
+  const sortedPolicies = [...filteredPolicies].sort((a, b) => {
+    const aLocked = !unlockedPolicyIds.includes(a.id);
+    const bLocked = !unlockedPolicyIds.includes(b.id);
+    if (aLocked !== bLocked) return aLocked ? 1 : -1;
+
+    const aSelected = selected.some(s => s.policyId === a.id);
+    const bSelected = selected.some(s => s.policyId === b.id);
+    if (aSelected !== bSelected) return aSelected ? -1 : 1;
+
+    // New policies float to top (after selected)
+    const aNew = newlyUnlockedPolicyIds.includes(a.id);
+    const bNew = newlyUnlockedPolicyIds.includes(b.id);
+    if (aNew !== bNew) return aNew ? -1 : 1;
+
+    const aDisabled = isPolicyDisabled(a);
+    const bDisabled = isPolicyDisabled(b);
+    if (aDisabled !== bDisabled) return aDisabled ? 1 : -1;
+
+    // Within available: sort by cost ascending
+    const aCost = computeEffectiveCost(a, resources.polarization, rival.gridlockCountdown, blocs.syndicate.loyalty, friendlyMajority);
+    const bCost = computeEffectiveCost(b, resources.polarization, rival.gridlockCountdown, blocs.syndicate.loyalty, friendlyMajority);
+    return aCost - bCost;
+  });
+
+  // Tab keyboard navigation
+  function handleTabKeyDown(e: React.KeyboardEvent, tabs: CategoryFilter[]) {
+    const currentIdx = tabs.indexOf(activeTab);
+    let nextIdx = -1;
+
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      nextIdx = (currentIdx + 1) % tabs.length;
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      nextIdx = (currentIdx - 1 + tabs.length) % tabs.length;
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      nextIdx = 0;
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      nextIdx = tabs.length - 1;
+    }
+
+    if (nextIdx >= 0) {
+      setActiveTab(tabs[nextIdx]);
+      // Focus the new tab button
+      const tabList = tabListRef.current;
+      if (tabList) {
+        const buttons = tabList.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+        buttons[nextIdx]?.focus();
+      }
+    }
+  }
+
+  const allTabs: CategoryFilter[] = ['all', ...CATEGORY_ORDER];
+  const tabPanelId = 'policy-tabpanel';
+
   return (
     <section aria-label="Policy selection">
       <div className="px-4 pt-4 pb-2">
@@ -93,10 +205,68 @@ export default function PolicyPicker() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 px-4 pb-4">
-        {POLICIES.map(policy => {
+      {/* Category filter tabs */}
+      <div
+        ref={tabListRef}
+        role="tablist"
+        aria-label="Policy categories"
+        className="flex gap-1 px-4 pb-3 overflow-x-auto"
+      >
+        {allTabs.map((tab) => {
+          const isActive = activeTab === tab;
+          const colorClass = tab === 'all' ? 'border-cyan-400 text-cyan-300' : (CATEGORY_TAB_COLORS[tab] ?? 'border-slate-400 text-slate-300');
+          const count = tab === 'all'
+            ? `${allUnlocked}/${POLICIES.length}`
+            : `${categoryCounts[tab]?.unlocked ?? 0}/${categoryCounts[tab]?.total ?? 0}`;
+
+          return (
+            <button
+              key={tab}
+              role="tab"
+              aria-selected={isActive}
+              aria-controls={tabPanelId}
+              tabIndex={isActive ? 0 : -1}
+              onClick={() => setActiveTab(tab)}
+              onKeyDown={(e) => handleTabKeyDown(e, allTabs)}
+              className={`
+                px-3 py-1.5 text-xs font-medium rounded-t whitespace-nowrap border-b-2 transition-colors
+                focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-1 focus:ring-offset-slate-900
+                ${isActive
+                  ? `${colorClass} bg-slate-800/80`
+                  : 'border-transparent text-slate-500 hover:text-slate-300 hover:border-slate-600'}
+              `}
+            >
+              {tab === 'all' ? 'All' : CATEGORY_LABELS[tab]} ({count})
+            </button>
+          );
+        })}
+      </div>
+
+      <div
+        id={tabPanelId}
+        role="tabpanel"
+        aria-labelledby={`tab-${activeTab}`}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 px-4 pb-4"
+      >
+        {sortedPolicies.map(policy => {
+          const isLocked = !unlockedPolicyIds.includes(policy.id);
+          if (isLocked) {
+            return (
+              <PolicyCard
+                key={policy.id}
+                policy={policy}
+                selected={false}
+                disabled={true}
+                effectiveCost={0}
+                onToggle={() => {}}
+                locked={true}
+                lockHint={policy.unlockCondition?.hint}
+              />
+            );
+          }
           const isSelected = selected.some(s => s.policyId === policy.id);
-          const disabled = !isSelected && (isPolicyDisabled(policy) || selected.length >= 2);
+          const disabledReason = isSelected ? null : (isPolicyDisabled(policy) ? getDisabledReason(policy) : null);
+          const disabled = !isSelected && (disabledReason !== null || selected.length >= 2);
           const effectiveCost = computeEffectiveCost(
             policy, resources.polarization, rival.gridlockCountdown, blocs.syndicate.loyalty, friendlyMajority
           );
@@ -106,9 +276,10 @@ export default function PolicyPicker() {
               policy={policy}
               selected={isSelected}
               disabled={disabled}
-              needsMajority={!!(policy.requiresMajority && !friendlyMajority)}
+              disabledReason={disabledReason}
               effectiveCost={effectiveCost}
               onToggle={() => handleToggle(policy.id)}
+              isNew={newlyUnlockedPolicyIds.includes(policy.id)}
             />
           );
         })}
@@ -123,12 +294,17 @@ export default function PolicyPicker() {
         </button>
       </div>
 
-      {pendingBlocPolicy && (
-        <BlocTargetModal
-          onSelect={handleBlocSelect}
-          onCancel={() => setPendingBlocPolicy(null)}
-        />
-      )}
+      {pendingBlocPolicy && (() => {
+        const p = POLICIES.find(pol => pol.id === pendingBlocPolicy);
+        return (
+          <BlocTargetModal
+            policyName={p?.name ?? ''}
+            loyaltyBonus={p?.id === 'informal_channels' ? 10 : 15}
+            onSelect={handleBlocSelect}
+            onCancel={() => setPendingBlocPolicy(null)}
+          />
+        );
+      })()}
     </section>
   );
 }

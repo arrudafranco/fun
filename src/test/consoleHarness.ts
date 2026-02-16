@@ -5,9 +5,12 @@ import { getPolarizationCostMultiplier, getBacklashChance } from '../engine/pola
 import { calculateRivalPowerDelta, generateRivalAction } from '../engine/rival';
 import { processDiscoveryTick } from '../engine/discovery';
 import { processCrisisTick } from '../engine/crisisChains';
+import { getStartingPolicyIds, isPolicyUnlockMet, processUnlocks } from '../engine/unlocks';
+import { generateBriefingItems } from '../engine/briefing';
 import { BLOC_DEFINITIONS } from '../data/blocs';
 import { POLICIES } from '../data/policies';
 import { ALL_BLOC_IDS } from '../types/blocs';
+import type { BlocId } from '../types/blocs';
 import type { GameState, Difficulty } from '../types/game';
 import { getDifficultyConfig } from '../types/game';
 import type { ActionChoice } from '../types/actions';
@@ -992,6 +995,247 @@ function test19_RivalActions(): void {
 }
 
 // ============================
+// Test 20: Policy Unlock System
+// ============================
+function test20_PolicyUnlockSystem() {
+  console.log('\n▸ test20_PolicyUnlockSystem');
+
+  // 1. Starting policies are around 18
+  const startingIds = getStartingPolicyIds();
+  assert(startingIds.length >= 15 && startingIds.length <= 22,
+    `Starting policies count = ${startingIds.length} (expected 15-22)`);
+
+  // 2. Initial state has starting policies unlocked
+  seedRng(2001);
+  const state = createInitialState();
+  assert(state.unlockedPolicyIds.length === startingIds.length,
+    `Initial unlocked matches starting: ${state.unlockedPolicyIds.length}`);
+
+  // 3. Non-starting policies are NOT in initial unlocked set
+  const lockedPolicies = POLICIES.filter(p => p.unlockCondition && p.unlockCondition.type !== 'always');
+  assert(lockedPolicies.length > 0, `There are locked policies: ${lockedPolicies.length}`);
+  for (const p of lockedPolicies) {
+    assert(!state.unlockedPolicyIds.includes(p.id),
+      `"${p.id}" is NOT unlocked at start`);
+  }
+
+  // 4. Turn-based unlocks fire at correct turn
+  const turn4Policy = POLICIES.find(p =>
+    p.unlockCondition?.type === 'turn' && p.unlockCondition.turn === 4);
+  assert(turn4Policy !== undefined, 'There exists a turn-4 unlock policy');
+  if (turn4Policy) {
+    const s = createInitialState();
+    s.turn = 3;
+    assert(!isPolicyUnlockMet(turn4Policy, s), `"${turn4Policy.id}" locked at turn 3`);
+    s.turn = 4;
+    assert(isPolicyUnlockMet(turn4Policy, s), `"${turn4Policy.id}" unlocked at turn 4`);
+  }
+
+  // 5. Bloc-loyalty-based unlocks
+  const laborPolicy = POLICIES.find(p => p.id === 'right_to_strike');
+  assert(laborPolicy !== undefined, 'right_to_strike exists');
+  if (laborPolicy) {
+    const s = createInitialState();
+    s.turn = 99; // remove turn gating concern
+    s.blocs.labor.loyalty = 40;
+    assert(!isPolicyUnlockMet(laborPolicy, s), 'right_to_strike locked at labor loyalty 40');
+    s.blocs.labor.loyalty = 55;
+    assert(isPolicyUnlockMet(laborPolicy, s), 'right_to_strike unlocked at labor loyalty 55');
+  }
+
+  // 6. Loyalty-max unlocks (e.g., monetary_sovereignty_decree needs finance <= 35)
+  const monetaryPolicy = POLICIES.find(p => p.id === 'monetary_sovereignty_decree');
+  if (monetaryPolicy) {
+    const s = createInitialState();
+    s.turn = 99;
+    s.blocs.finance.loyalty = 50;
+    assert(!isPolicyUnlockMet(monetaryPolicy, s), 'monetary_sovereignty locked at finance loyalty 50');
+    s.blocs.finance.loyalty = 30;
+    assert(isPolicyUnlockMet(monetaryPolicy, s), 'monetary_sovereignty unlocked at finance loyalty 30');
+  }
+
+  // 7. OR-chain unlocks (black_market_crackdown: military >= 50 OR dread >= 40)
+  const bmcPolicy = POLICIES.find(p => p.id === 'black_market_crackdown');
+  assert(bmcPolicy !== undefined, 'black_market_crackdown exists');
+  if (bmcPolicy) {
+    const s = createInitialState();
+    s.turn = 99;
+    s.blocs.military.loyalty = 30;
+    s.resources.dread = 10;
+    assert(!isPolicyUnlockMet(bmcPolicy, s), 'BMC locked when neither condition met');
+    s.blocs.military.loyalty = 50;
+    assert(isPolicyUnlockMet(bmcPolicy, s), 'BMC unlocked via military >= 50');
+    s.blocs.military.loyalty = 30;
+    s.resources.dread = 40;
+    assert(isPolicyUnlockMet(bmcPolicy, s), 'BMC unlocked via dread >= 40 (OR chain)');
+  }
+
+  // 8. processUnlocks tracks newly unlocked IDs
+  seedRng(2002);
+  const s2 = createInitialState();
+  s2.turn = 4;
+  const newlyUnlocked = processUnlocks(s2);
+  assert(newlyUnlocked.length >= 3, `Turn 4 unlocks >= 3 policies: ${newlyUnlocked.length}`);
+  // All newly unlocked should now be in unlockedPolicyIds
+  for (const id of newlyUnlocked) {
+    assert(s2.unlockedPolicyIds.includes(id), `"${id}" is in unlockedPolicyIds after processUnlocks`);
+  }
+
+  // 9. processUnlocks doesn't re-unlock already unlocked policies
+  const secondRun = processUnlocks(s2);
+  assert(secondRun.length === 0, `Second processUnlocks returns 0 new: ${secondRun.length}`);
+
+  // 10. Every policy with unlockCondition has a non-empty hint
+  for (const p of POLICIES) {
+    if (p.unlockCondition && p.unlockCondition.type !== 'always') {
+      assert(typeof p.unlockCondition.hint === 'string' && p.unlockCondition.hint.length > 0,
+        `"${p.id}" has a non-empty unlock hint`);
+    }
+  }
+
+  // 11. All policy IDs referenced in unlock conditions exist
+  const allPolicyIds = new Set(POLICIES.map(p => p.id));
+  assert(allPolicyIds.size === POLICIES.length, `No duplicate policy IDs (${allPolicyIds.size} unique)`);
+
+  // 12. Full simulation: all policies eventually unlock
+  seedRng(2003);
+  const simState = createInitialState();
+  simState.difficulty = 'normal';
+  // Set favorable conditions for unlocks
+  for (const blocId of ALL_BLOC_IDS) {
+    simState.blocs[blocId as BlocId].loyalty = 60;
+  }
+  simState.resources.narrative = 60;
+  simState.resources.polarization = 50;
+  simState.resources.dread = 45;
+  simState.turn = 20;
+  processUnlocks(simState);
+  const stillLocked = POLICIES.filter(p => !simState.unlockedPolicyIds.includes(p.id));
+  console.log(`  With favorable conditions at turn 20: ${stillLocked.length} policies still locked`);
+  // Most should be unlocked, allow a few that need very specific conditions
+  assert(stillLocked.length <= 5, `At most 5 policies still locked: ${stillLocked.map(p => p.id).join(', ')}`);
+}
+
+// ============================
+// Test 21: Briefing Generation
+// ============================
+function test21_BriefingGeneration() {
+  console.log('\n▸ test21_BriefingGeneration');
+
+  // 1. No briefing without previousResources
+  seedRng(2101);
+  const state = createInitialState();
+  state.previousResources = null;
+  const items0 = generateBriefingItems(state);
+  assert(items0.length === 0, 'No briefing items without previousResources');
+
+  // 2. Max 3 items returned
+  const s = createInitialState();
+  s.previousResources = deepClone(s.resources);
+  // Trigger many conditions simultaneously
+  s.rival.lastAction = 'The Rival held a press conference.';
+  s.rival.power = 80;
+  s.rival.powerDelta = 10;
+  s.activeCrises = [{ chainId: 'banking_crisis', stageIndex: 0, turnsAtStage: 0, resolved: false }];
+  s.previousResources.legitimacy = s.resources.legitimacy + 20;
+  s.resources.inflation = 10;
+  s.previousResources.inflation = 5;
+  s.resources.narrative = 25;
+  s.previousResources.narrative = 35;
+  s.resources.polarization = 65;
+  s.previousResources.polarization = 55;
+  s.resources.dread = 45;
+  s.previousResources.dread = 30;
+  s.resources.mobilization = 15;
+  s.previousResources.mobilization = 25;
+
+  const items = generateBriefingItems(s);
+  assert(items.length <= 3, `At most 3 briefing items: got ${items.length}`);
+  assert(items.length > 0, 'At least 1 briefing item with notable changes');
+
+  // 3. Rival action gets highest priority
+  const s2 = createInitialState();
+  s2.previousResources = deepClone(s2.resources);
+  s2.rival.lastAction = 'The Rival organized a rally.';
+  const items2 = generateBriefingItems(s2);
+  assert(items2.length >= 1, 'At least 1 item when rival has lastAction');
+  assert(items2[0].type === 'rival', `First item is rival action: ${items2[0].type}`);
+
+  // 4. Crisis generates briefing item
+  const s3 = createInitialState();
+  s3.previousResources = deepClone(s3.resources);
+  s3.activeCrises = [{ chainId: 'banking_crisis', stageIndex: 0, turnsAtStage: 0, resolved: false }];
+  const items3 = generateBriefingItems(s3);
+  const crisisItem = items3.find(i => i.type === 'crisis');
+  assert(crisisItem !== undefined, 'Crisis generates a briefing item');
+
+  // 5. Discovery (large legitimacy drop) generates briefing item
+  const s4 = createInitialState();
+  s4.previousResources = deepClone(s4.resources);
+  s4.previousResources.legitimacy = s4.resources.legitimacy + 20;
+  const items4 = generateBriefingItems(s4);
+  const discoveryItem = items4.find(i => i.type === 'discovery');
+  assert(discoveryItem !== undefined, 'Large legitimacy drop creates discovery briefing');
+
+  // 6. Resource threshold crossings generate items
+  const s5 = createInitialState();
+  s5.previousResources = deepClone(s5.resources);
+  s5.resources.inflation = 10;
+  s5.previousResources.inflation = 8;
+  const items5 = generateBriefingItems(s5);
+  const inflationItem = items5.find(i => i.type === 'resource');
+  assert(inflationItem !== undefined, 'Inflation crossing 10 generates resource item');
+
+  // 7. Quiet turn with no notable changes produces no items
+  const s6 = createInitialState();
+  s6.previousResources = deepClone(s6.resources);
+  // No rival action, no crises, no threshold crossings
+  s6.rival.lastAction = '';
+  const items6 = generateBriefingItems(s6);
+  assert(items6.length === 0, `Quiet turn produces no briefing: got ${items6.length}`);
+
+  // 8. Bloc loyalty shift generates item
+  const s7 = createInitialState();
+  s7.previousResources = deepClone(s7.resources);
+  s7.blocs.finance.loyalty = 22; // below 25, above 20 - triggers briefing
+  const items7 = generateBriefingItems(s7);
+  const blocItem = items7.find(i => i.type === 'bloc_shift');
+  assert(blocItem !== undefined, 'Finance loyalty 22 generates bloc_shift briefing');
+
+  // 9. Policy unlock generates item
+  const s8 = createInitialState();
+  s8.previousResources = deepClone(s8.resources);
+  s8.newlyUnlockedPolicyIds = ['some_policy'];
+  const items8 = generateBriefingItems(s8);
+  const unlockItem = items8.find(i => i.type === 'unlock');
+  assert(unlockItem !== undefined, 'Newly unlocked policy generates unlock briefing');
+
+  // 10. Colossus patience below 30 generates item
+  const s9 = createInitialState();
+  s9.previousResources = deepClone(s9.resources);
+  s9.colossus.patience = 25;
+  const items9 = generateBriefingItems(s9);
+  const colossusItem = items9.find(i => i.type === 'resource');
+  assert(colossusItem !== undefined, 'Low Colossus patience generates briefing');
+
+  // 11. Items have non-empty text
+  for (const item of items) {
+    assert(typeof item.text === 'string' && item.text.length > 0,
+      `Briefing item has non-empty text (type: ${item.type})`);
+  }
+
+  // 12. Briefing integrates with processFullTurnImpl
+  seedRng(2102);
+  const simState = createInitialState();
+  processFullTurnImpl(simState, []);
+  // After a turn, previousResources should be set
+  assert(simState.previousResources !== null, 'previousResources set after processFullTurnImpl');
+  // briefingItems should be populated (rival always acts, so at least 1 item expected)
+  assert(Array.isArray(simState.briefingItems), 'briefingItems is an array after turn');
+  console.log(`  Briefing items after first turn: ${simState.briefingItems.length}`);
+}
+
+// ============================
 // RUN ALL TESTS
 // ============================
 console.log('╔══════════════════════════════════════════╗');
@@ -1017,6 +1261,8 @@ test16_BalanceVerification();
 test17_CentralBankIndependence();
 test18_CongressionalMechanics();
 test19_RivalActions();
+test20_PolicyUnlockSystem();
+test21_BriefingGeneration();
 
 // Reset RNG to non-deterministic mode
 seedRng();

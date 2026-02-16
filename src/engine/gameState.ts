@@ -22,6 +22,8 @@ import { EVENT_POOL } from '../data/events';
 import { processDiscoveryTick } from './discovery';
 import { processCrisisTick } from './crisisChains';
 import { clamp, rollChance, deepClone } from '../utils/helpers';
+import { getStartingPolicyIds, processUnlocks } from './unlocks';
+import { generateBriefingItems } from './briefing';
 
 const SAVE_KEY = 'miranda-save';
 
@@ -33,6 +35,7 @@ export interface GameStore extends GameState {
   startNewsPhase: () => void;
   resolveCurrentEvent: (choiceId?: string) => void;
   submitActions: (actions: ActionChoice[]) => void;
+  dismissBriefing: () => void;
   saveGame: () => void;
   loadGame: () => boolean;
   hasSavedGame: () => boolean;
@@ -74,7 +77,12 @@ function createInitialState(difficulty: Difficulty = 'standard'): GameState {
     firedEventIds: [],
     currentEvent: null,
     pendingActions: [],
+    unlockedPolicyIds: getStartingPolicyIds(),
+    newlyUnlockedPolicyIds: [],
+    briefingItems: [],
+    showBriefing: false,
     newsLog: [],
+    previousResources: null,
     ending: null,
     gameOver: false,
   };
@@ -383,6 +391,7 @@ function startNewsPhaseImpl(state: GameState): void {
 function submitActionsImpl(state: GameState, actions: ActionChoice[]): void {
   const config = getDifficultyConfig(state.difficulty);
   const legitimacyAtTurnStart = state.resources.legitimacy;
+  state.previousResources = { ...state.resources };
 
   // Action phase
   state.phase = 'action';
@@ -441,21 +450,42 @@ function submitActionsImpl(state: GameState, actions: ActionChoice[]): void {
 
   state.colossus.alignment = state.resources.colossusAlignment;
 
+  // Process policy unlocks
+  state.newlyUnlockedPolicyIds = [];
+  const newUnlocks = processUnlocks(state);
+  state.newlyUnlockedPolicyIds = newUnlocks;
+  for (const policyId of newUnlocks) {
+    const policy = POLICIES.find(p => p.id === policyId);
+    if (policy) {
+      state.newsLog.push({ turn: state.turn, headline: `New policy available: ${policy.name}` });
+    }
+  }
+
+  // Generate turn briefing
+  const briefing = generateBriefingItems(state);
+  state.briefingItems = briefing;
+  state.showBriefing = briefing.length > 0;
+
   const ending = checkWinLossConditions(state);
   if (ending) {
     state.ending = ending;
     state.gameOver = true;
+    state.showBriefing = false;
     return;
   }
 
-  // Advance to next turn's news phase
-  state.turn++;
-  startNewsPhaseImpl(state);
+  // If briefing will show, don't advance to next turn yet
+  // The dismissBriefing action will advance
+  if (!state.showBriefing) {
+    state.turn++;
+    startNewsPhaseImpl(state);
+  }
 }
 
 function processFullTurnImpl(state: GameState, actions: ActionChoice[]): void {
   const config = getDifficultyConfig(state.difficulty);
   const legitimacyAtTurnStart = state.resources.legitimacy;
+  state.previousResources = { ...state.resources };
 
   // Phase 1: NEWS — check crisis queue first, then normal events
   state.phase = 'news';
@@ -569,6 +599,11 @@ function processFullTurnImpl(state: GameState, actions: ActionChoice[]): void {
   // Sync colossus alignment
   state.colossus.alignment = state.resources.colossusAlignment;
 
+  // Process policy unlocks
+  state.newlyUnlockedPolicyIds = [];
+  const newUnlocks = processUnlocks(state);
+  state.newlyUnlockedPolicyIds = newUnlocks;
+
   // Check win/loss
   const ending = checkWinLossConditions(state);
   if (ending) {
@@ -633,6 +668,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
   },
 
+  dismissBriefing: () => {
+    const state = deepClone(get()) as GameState;
+    state.showBriefing = false;
+    state.briefingItems = [];
+    // Now advance to next turn
+    state.turn++;
+    startNewsPhaseImpl(state);
+    set(state);
+  },
+
   advancePhase: () => {
     // For future UI: advance one phase at a time
     const phases: TurnPhase[] = [
@@ -645,7 +690,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   saveGame: () => {
-    const { initGame, processFullTurn, advancePhase, getState, startNewsPhase, resolveCurrentEvent, submitActions, saveGame, loadGame, hasSavedGame, deleteSave, ...state } = get();
+    const { initGame, processFullTurn, advancePhase, getState, startNewsPhase, resolveCurrentEvent, submitActions, dismissBriefing, saveGame, loadGame, hasSavedGame, deleteSave, ...state } = get();
     // Replace currentEvent with its ID for serialization (condition functions aren't serializable)
     const serializable = {
       ...state,
@@ -679,6 +724,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
       if (saved.congress && saved.congress.friendlyMajority === undefined) saved.congress.friendlyMajority = false;
       if (saved.rival && saved.rival.lastAction === undefined) saved.rival.lastAction = '';
       if (saved.rival && saved.rival.powerDelta === undefined) saved.rival.powerDelta = 0;
+      if (saved.previousResources === undefined) saved.previousResources = null;
+      if (!saved.unlockedPolicyIds) saved.unlockedPolicyIds = POLICIES.map(p => p.id); // legacy saves: all unlocked
+      if (!saved.newlyUnlockedPolicyIds) saved.newlyUnlockedPolicyIds = [];
+      if (!saved.briefingItems) saved.briefingItems = [];
+      if (saved.showBriefing === undefined) saved.showBriefing = false;
       set(saved as GameState);
       return true;
     } catch {
@@ -703,7 +753,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   getState: () => {
-    const { initGame, processFullTurn, advancePhase, getState, startNewsPhase, resolveCurrentEvent, submitActions, saveGame, loadGame, hasSavedGame, deleteSave, ...state } = get();
+    const { initGame, processFullTurn, advancePhase, getState, startNewsPhase, resolveCurrentEvent, submitActions, dismissBriefing, saveGame, loadGame, hasSavedGame, deleteSave, ...state } = get();
     return state as GameState;
   },
 }));

@@ -40,6 +40,21 @@ export interface PolicyEffects {
   delayed?: DelayedEffect;
 }
 
+export interface UnlockCondition {
+  type: 'turn' | 'bloc_loyalty' | 'resource' | 'event' | 'always';
+  turn?: number;
+  blocId?: BlocId;
+  loyaltyMin?: number;
+  loyaltyMax?: number;
+  resource?: keyof ResourceState;
+  resourceMin?: number;
+  resourceMax?: number;
+  eventId?: string;
+  /** Also require another condition (OR logic for multiple entries, AND with parent) */
+  or?: UnlockCondition;
+  hint: string;
+}
+
 export interface Policy {
   id: string;
   name: string;
@@ -52,6 +67,7 @@ export interface Policy {
   targetBloc?: boolean;        // Player picks target bloc
   requiresSyndicateLoyalty?: number;
   requiresMajority?: boolean;
+  unlockCondition?: UnlockCondition;
   effects: PolicyEffects;
   conditionalEffects?: (state: GameState) => Partial<PolicyEffects>;
 }

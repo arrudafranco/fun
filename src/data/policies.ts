@@ -104,6 +104,7 @@ export const POLICIES: Policy[] = [
     centrist: false,
     requiresSyndicateLoyalty: 40,
     targetBloc: true,
+    unlockCondition: { type: 'bloc_loyalty', blocId: 'syndicate', loyaltyMin: 40, hint: 'The Underworld opens its catalog... eventually. Needs Underworld loyalty 40+.' },
     effects: {
       blocs: {},
       resources: { dread: +3 },
@@ -127,6 +128,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 90,
     capitalCost: 20,
     centrist: true,
+    unlockCondition: { type: 'turn', turn: 4, hint: 'Your trade ministry needs time to draft alternatives. Available from Turn 4.' },
     effects: {
       blocs: {
         industry:   { loyalty: +15 },
@@ -154,6 +156,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 75,
     capitalCost: 35,
     centrist: false,
+    unlockCondition: { type: 'turn', turn: 4, hint: 'The environmental lobby is still organizing. Available from Turn 4.' },
     effects: {
       blocs: {
         industry:   { loyalty: +10 },
@@ -182,6 +185,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 100,
     capitalCost: 5,
     centrist: false,
+    unlockCondition: { type: 'turn', turn: 6, hint: 'Your propaganda team is still getting organized. Available from Turn 6.' },
     effects: {
       blocs: {
         mainStreet: { loyalty: +10 },
@@ -386,6 +390,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 60,
     capitalCost: 40,
     centrist: true,
+    unlockCondition: { type: 'turn', turn: 12, hint: 'Long-term planning requires political stability. Available from Turn 12.' },
     effects: {
       blocs: {
         finance:  { loyalty: +10 },
@@ -411,6 +416,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 80,
     capitalCost: 15,
     centrist: true,
+    unlockCondition: { type: 'bloc_loyalty', blocId: 'military', loyaltyMin: 50, hint: 'The generals offer to "assist" with the shadow economy. Needs Military loyalty 50+.', or: { type: 'resource', resource: 'dread', resourceMin: 40, hint: '' } },
     effects: {
       blocs: {
         syndicate:  { loyalty: -15, power: -5 },
@@ -433,6 +439,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 70,
     capitalCost: 20,
     centrist: true,
+    unlockCondition: { type: 'turn', turn: 8, hint: 'The tourism board is still getting organized. Available from Turn 8.' },
     effects: {
       blocs: {
         artists:    { loyalty: +5 },
@@ -479,6 +486,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 90,
     capitalCost: 0,
     centrist: true,
+    unlockCondition: { type: 'turn', turn: 6, hint: 'Desperate times call for desperate cuts. Not yet desperate enough.' },
     effects: {
       blocs: {
         finance:    { loyalty: +10 },
@@ -504,6 +512,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 70,
     capitalCost: 15,
     centrist: true,
+    unlockCondition: { type: 'turn', turn: 12, hint: 'The banking infrastructure for microloans is still being built. Available from Turn 12.' },
     effects: {
       blocs: {
         mainStreet: { loyalty: +10 },
@@ -554,6 +563,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 80,
     capitalCost: 8,
     centrist: false,
+    unlockCondition: { type: 'turn', turn: 4, hint: 'The gig economy hearings haven\'t started yet. Available from Turn 4.' },
     effects: {
       blocs: {
         labor:  { loyalty: +10 },
@@ -576,6 +586,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 70,
     capitalCost: 12,
     centrist: true,
+    unlockCondition: { type: 'turn', turn: 8, hint: 'The training facilities aren\'t ready yet. Available from Turn 8.' },
     effects: {
       blocs: {
         labor:    { loyalty: +5 },
@@ -602,6 +613,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 90,
     capitalCost: 5,
     centrist: false,
+    unlockCondition: { type: 'bloc_loyalty', blocId: 'labor', loyaltyMin: 55, hint: 'The Unions believe you\'ll protect them. Needs Union loyalty 55+.' },
     effects: {
       blocs: {
         labor:    { loyalty: +15 },
@@ -627,6 +639,7 @@ export const POLICIES: Policy[] = [
     capitalCost: 10,
     centrist: false,
     targetBloc: true,
+    unlockCondition: { type: 'bloc_loyalty', blocId: 'syndicate', loyaltyMin: 45, hint: 'The Underworld has files. They\'re willing to share... once they trust you. Needs Underworld loyalty 45+.' },
     effects: {
       blocs: {},
       resources: {
@@ -682,6 +695,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 100,
     capitalCost: 25,
     centrist: false,
+    unlockCondition: { type: 'bloc_loyalty', blocId: 'syndicate', loyaltyMin: 30, hint: 'The Underworld opens its catalog. Needs Underworld loyalty 30+.' },
     effects: {
       blocs: {
         military:  { loyalty: +15 },
@@ -711,6 +725,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 100,
     capitalCost: 15,
     centrist: false,
+    unlockCondition: { type: 'bloc_loyalty', blocId: 'syndicate', loyaltyMin: 30, hint: 'The Underworld opens its catalog. Needs Underworld loyalty 30+.' },
     effects: {
       blocs: {
         syndicate: { loyalty: +10 },
@@ -742,6 +757,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 90,
     capitalCost: 10,
     centrist: false,
+    unlockCondition: { type: 'resource', resource: 'polarization', resourceMin: 40, hint: 'The political climate is heated enough for bold messaging. Needs polarization 40+.' },
     effects: {
       blocs: {
         media:   { loyalty: +10 },
@@ -763,6 +779,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 70,
     capitalCost: 5,
     centrist: true,
+    unlockCondition: { type: 'bloc_loyalty', blocId: 'media', loyaltyMin: 45, hint: 'The Heralds propose a joint anti-corruption initiative. Needs Heralds loyalty 45+.' },
     effects: {
       blocs: {
         court:     { loyalty: +5 },
@@ -784,6 +801,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 100,
     capitalCost: 5,
     centrist: false,
+    unlockCondition: { type: 'turn', turn: 6, hint: 'The textbook committee needs time to convene. Available from Turn 6.' },
     effects: {
       blocs: {
         academy:    { loyalty: -15 },
@@ -832,6 +850,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 90,
     capitalCost: 20,
     centrist: false,
+    unlockCondition: { type: 'turn', turn: 8, hint: 'The military needs time to prepare border deployments. Available from Turn 8.' },
     effects: {
       blocs: {
         military:   { loyalty: +10, power: +5 },
@@ -856,6 +875,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 90,
     capitalCost: 25,
     centrist: false,
+    unlockCondition: { type: 'bloc_loyalty', blocId: 'enforcers', loyaltyMin: 45, hint: 'The Enforcers propose an "infrastructure upgrade." Needs Enforcers loyalty 45+.' },
     effects: {
       blocs: {
         enforcers: { loyalty: +10 },
@@ -880,6 +900,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 70,
     capitalCost: 5,
     centrist: true,
+    unlockCondition: { type: 'resource', resource: 'narrative', resourceMin: 50, hint: 'Your narrative position is strong enough to take risks. Needs narrative 50+.' },
     effects: {
       blocs: {
         syndicate:  { loyalty: +10 },
@@ -903,6 +924,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 80,
     capitalCost: 10,
     centrist: true,
+    unlockCondition: { type: 'resource', resource: 'narrative', resourceMin: 50, hint: 'Your narrative position is strong enough to take risks. Needs narrative 50+.' },
     effects: {
       blocs: {
         military:  { loyalty: -5 },
@@ -971,6 +993,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 80,
     capitalCost: 5,
     centrist: true,
+    unlockCondition: { type: 'turn', turn: 12, hint: 'The Colossus ambassador is still drafting terms. Available from Turn 12.' },
     effects: {
       blocs: {
         finance:  { loyalty: +10 },
@@ -1000,6 +1023,7 @@ export const POLICIES: Policy[] = [
     capitalCost: 20,
     centrist: true,
     requiresMajority: true,
+    unlockCondition: { type: 'turn', turn: 8, hint: 'Your legal team is still drafting the amendment. Available from Turn 8.' },
     effects: {
       blocs: {
         court:   { loyalty: +10 },
@@ -1023,6 +1047,7 @@ export const POLICIES: Policy[] = [
     capitalCost: 15,
     centrist: true,
     requiresMajority: true,
+    unlockCondition: { type: 'turn', turn: 8, hint: 'The electoral commission is still reviewing proposals. Available from Turn 8.' },
     effects: {
       blocs: {
         court:      { loyalty: +5 },
@@ -1069,6 +1094,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 70,
     capitalCost: 10,
     centrist: true,
+    unlockCondition: { type: 'bloc_loyalty', blocId: 'finance', loyaltyMin: 55, hint: 'The Banks trust you enough to discuss independence. Needs Banks loyalty 55+.' },
     effects: {
       blocs: {
         finance: { loyalty: +10 },
@@ -1090,6 +1116,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 80,
     capitalCost: 15,
     centrist: false,
+    unlockCondition: { type: 'bloc_loyalty', blocId: 'finance', loyaltyMax: 35, hint: 'The Banks abandoned you. Time to take the wheel. Needs Banks loyalty below 35.' },
     effects: {
       blocs: {
         finance:  { loyalty: -15 },
@@ -1111,6 +1138,7 @@ export const POLICIES: Policy[] = [
     maxPolarization: 100,
     capitalCost: 5,
     centrist: false,
+    unlockCondition: { type: 'bloc_loyalty', blocId: 'finance', loyaltyMax: 35, hint: 'The Banks abandoned you. Time to take the wheel. Needs Banks loyalty below 35.' },
     effects: {
       blocs: {
         finance:    { loyalty: -10 },

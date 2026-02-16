@@ -84,6 +84,13 @@ export type EndingId =
   | 'rival_wins'
   | 'new_compact';
 
+export type BriefingItemType = 'rival' | 'crisis' | 'discovery' | 'bloc_shift' | 'resource' | 'unlock';
+
+export interface BriefingItem {
+  text: string;
+  type: BriefingItemType;
+}
+
 export interface CongressState {
   seatShares: Record<BlocId, number>;  // Proportional to power
   friendlyMajority: boolean;
@@ -127,6 +134,17 @@ export interface GameState {
 
   // News log
   newsLog: NewsLogEntry[];
+
+  // Policy unlock system
+  unlockedPolicyIds: string[];
+  newlyUnlockedPolicyIds: string[];
+
+  // Turn briefing
+  briefingItems: BriefingItem[];
+  showBriefing: boolean;
+
+  // Previous turn resources (for trend arrows)
+  previousResources: ResourceState | null;
 
   // Game end
   ending: EndingId | null;

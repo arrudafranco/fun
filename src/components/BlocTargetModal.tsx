@@ -21,11 +21,13 @@ const BLOC_EMOJI: Record<BlocId, string> = {
 };
 
 interface BlocTargetModalProps {
+  policyName?: string;
+  loyaltyBonus?: number;
   onSelect: (blocId: BlocId) => void;
   onCancel: () => void;
 }
 
-export default function BlocTargetModal({ onSelect, onCancel }: BlocTargetModalProps) {
+export default function BlocTargetModal({ policyName, loyaltyBonus, onSelect, onCancel }: BlocTargetModalProps) {
   const firstRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -50,9 +52,14 @@ export default function BlocTargetModal({ onSelect, onCancel }: BlocTargetModalP
       aria-labelledby="bloc-target-title"
     >
       <div className="bg-slate-800 border border-slate-600 rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6">
-        <h2 id="bloc-target-title" className="text-lg font-bold text-cyan-400 mb-4">
-          Choose Target Bloc
+        <h2 id="bloc-target-title" className="text-lg font-bold text-cyan-400 mb-1">
+          {policyName ? policyName : 'Choose Target Bloc'}
         </h2>
+        <p className="text-xs text-slate-400 mb-4">
+          {loyaltyBonus
+            ? `Choose a bloc to receive +${loyaltyBonus} loyalty.`
+            : 'Choose which bloc benefits from this policy.'}
+        </p>
         <div className="grid grid-cols-2 gap-2">
           {ALL_BLOC_IDS.map((blocId, i) => (
             <button

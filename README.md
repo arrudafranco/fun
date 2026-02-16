@@ -8,7 +8,7 @@ A political simulation game set in a fictional developing nation. Navigate four 
 
 ## About
 
-Miranda Republic is a turn-based strategy game where every policy decision ripples through 14 political blocs, from the Banks to the Underworld. Manage your legitimacy, control the national narrative, and keep the Colossus (a powerful foreign superpower) from losing patience. With 46 policies, dynamic events, crisis chains, and 10 possible endings, no two playthroughs are alike.
+Miranda Republic is a turn-based strategy game where every policy decision ripples through 14 political blocs, from the Banks to the Underworld. Manage your legitimacy, control the national narrative, and keep the Colossus (a powerful foreign superpower) from losing patience. With 46 policies that unlock progressively as your government grows, dynamic events, crisis chains, narrative turn briefings, and 10 possible endings, no two playthroughs are alike.
 
 ## Tech Stack
 
@@ -17,7 +17,7 @@ Miranda Republic is a turn-based strategy game where every policy decision rippl
 - **Styling:** Tailwind CSS v4
 - **Build Tool:** Vite
 - **Language:** TypeScript
-- **Testing:** Custom deterministic test harness with seedable PRNG (308 tests, including 1500-seed fuzz across 3 difficulty levels)
+- **Testing:** Custom deterministic test harness with seedable PRNG (409 tests, including 1500-seed fuzz across 3 difficulty levels)
 
 ## Local Development
 
@@ -57,8 +57,9 @@ Miranda Republic was built collaboratively with [Claude Code](https://claude.ai/
 
 ### Technical Details
 
-- **Game engine architecture.** Pure-function engine with eleven modules (rival AI, congressional math, narrative phase, crisis chains, etc.) composing without side effects.
+- **Game engine architecture.** Pure-function engine with thirteen modules (rival AI, congressional math, narrative phase, crisis chains, policy unlocks, turn briefing, etc.) composing without side effects.
 - **Deterministic testing with seedable PRNG.** All randomness routes through a seedable Mulberry32 PRNG. The test harness runs 1,500 fuzz simulations (500 seeds x 3 difficulties) asserting invariants across ~72,000 game ticks, with any failure producing a deterministic repro.
+- **Progressive disclosure UI.** 46 policies organized into 7 filterable categories with progressive unlocks (18 starting, 28 unlockable via milestones). Narrative turn briefings provide post-turn vignettes. Context-aware resource tooltips teach mechanics through play.
 - **Complex system balancing.** 14 interacting blocs with sensitivity matrices, ripple effects, polarization feedback loops, and a multi-phase turn structure. Difficulty tiers tuned via parameterized configs, validated by automated balance assertions.
 - **Accessibility.** ARIA roles and labels, semantic HTML, keyboard navigation with focus traps in modals, `prefers-reduced-motion` support, and high-contrast color choices.
 - **Save/load with forward migration.** LocalStorage persistence with migration logic for schema evolution, ensuring older saves load cleanly as new mechanics are added.

@@ -174,6 +174,45 @@ Some policies have additional requirements:
 - **requiresSyndicateLoyalty**: Underworld loyalty must be at or above a threshold (e.g., Informal Channels requires 40).
 - **requiresMajority**: The player must have a friendly congressional majority (e.g., Constitutional Amendment, Electoral Reform).
 
+### Progressive Unlock System
+
+Not all 46 policies are available from Turn 1. 18 "starting" policies are available immediately. The remaining 28 unlock progressively through turn milestones, bloc loyalty thresholds, and resource conditions. This creates a sense of discovery and forward movement, preventing the player from being overwhelmed by a wall of 46 options on Turn 1.
+
+Each locked policy has an `unlockCondition` with a player-facing `hint` describing (in the game's dark whimsy voice) what must be achieved to unlock it. Locked policies are visible in the UI as dimmed cards with lock icons, showing only their name and hint.
+
+**Unlock condition types:**
+- **turn**: Available from a specific turn onward (e.g., Turn 4, Turn 8, Turn 12)
+- **bloc_loyalty**: Requires a specific bloc's loyalty above or below a threshold (e.g., Banks >= 55, Underworld >= 30)
+- **resource**: Requires a resource at a certain level (e.g., Narrative >= 50, Polarization >= 40, Dread >= 40)
+- **OR chains**: Some policies can unlock via multiple paths (e.g., Black Market Crackdown unlocks at Military loyalty >= 50 OR Dread >= 40)
+
+**Starting policies (18):** Austerity Budget, Platform Worker Rights, Backroom Appropriations, Operation Clean Sweep, Anti-Money Laundering Act, Public Reconciliation Forum, Price Controls Decree, Community Policing Initiative, Counter-Propaganda Bureau, Stimulus Package, National Unity Festival, Minimum Wage Hike, Trade Liberalization, Foreign Aid Package, Embassy Expansion, Judicial Appointment, Offshore Accounts, Populist Pivot.
+
+**Turn-based unlocks:**
+- Turn 4: Green Industrial Policy, Gig Worker Protections, Sovereignty Trade Package
+- Turn 6: Emergency Austerity, The Blame Game, Historical Revisionism
+- Turn 8: Tourism Initiative, Border Militarization, Apprenticeship Program, Constitutional Amendment, Electoral Reform
+- Turn 12: Sovereign Wealth Fund, Colossus Trade Deal, Microfinance Program
+
+**Relationship-based unlocks:**
+- Banks loyalty >= 55: Central Bank Autonomy Act
+- Banks loyalty <= 35: Monetary Sovereignty Decree, Interest Rate Override
+- Union loyalty >= 55: Right to Strike Guarantee
+- Underworld loyalty >= 30: Palace Coup Insurance, Shadow Cabinet
+- Underworld loyalty >= 40: Informal Channels
+- Underworld loyalty >= 45: Blackmail Dossier
+- Enforcers loyalty >= 45: Surveillance Network
+- Military loyalty >= 50 OR Dread >= 40: Black Market Crackdown
+
+**Context-based unlocks:**
+- Polarization >= 40: State Media Blitz
+- Heralds loyalty >= 45: Whistleblower Hotline
+- Narrative >= 50: Amnesty Program, Paramilitary Disbandment
+
+Unlock conditions are checked at the end of each turn. Newly unlocked policies receive a pulsing "New!" badge that clears after one turn.
+
+**Design rationale:** The unlock schedule ensures the player has enough starting options to be strategic without being overwhelmed. Turn-based unlocks simulate the growing capacity of government. Relationship-based unlocks reward investment in specific blocs. Some policies that create a resource are deliberately NOT gated on that same resource (e.g., Historical Revisionism creates polarization, so it's gated by turn count rather than polarization level, avoiding circular causality).
+
 ### Target Bloc Policies
 
 Backroom policies marked `targetBloc: true` let the player choose which bloc receives a loyalty bonus:
@@ -1113,7 +1152,73 @@ The endings collectively pose the question: "What does it mean to govern? And fo
 
 ---
 
+## Turn Briefing System
+
+After the player ends their turn and all phases process, a narrative briefing overlay appears (if anything notable happened). The briefing consists of at most 3 short vignettes written in the game's dark whimsy voice, describing what happened as lived detail rather than mechanical summaries.
+
+### Briefing Item Types (by priority)
+
+1. **Rival actions** (priority 100) -- The rival's generated action text, always included if present
+2. **Crisis events** (priority 95) -- Active crisis chain developments
+3. **Discovery/scandal** (priority 90) -- Triggered when legitimacy drops >= 15 in one turn
+4. **Rival threshold crossings** (priority 85-88) -- When rival power crosses 50 or 75
+5. **Resource threshold crossings** (priority 70-82) -- Inflation crossing 10 or 18, Narrative dropping below 30 or rising above 60, Mobilization dropping below 20, Polarization crossing 60, Dread crossing 40
+6. **Bloc loyalty milestones** (priority 60-65) -- Key blocs dropping below 25 or rising above 70 (flavor text specific to each bloc)
+7. **Colossus patience** (priority 55) -- Ambassador's patience below 30
+8. **Policy unlocks** (priority 50) -- New policies became available
+
+### Behavior
+
+- Maximum 3 items shown per briefing (highest priority wins)
+- If nothing notable happened, no briefing appears (skip to next turn)
+- Auto-advances after 8 seconds with visible countdown
+- Dismissible via click, Enter, Escape, or Space
+- Items compare current state to `previousResources` (stored at start of turn processing)
+
+### Tone
+
+The briefing text uses situationist detournement. It employs the language of institutional normalcy to reveal absurdity. The irony speaks for itself. No moralizing. The player draws their own conclusions. Each vignette builds a cumulative portrait of Miranda as a living place.
+
+---
+
+## UI Systems
+
+### Policy Category Tabs
+
+The 46 policies are organized into 7 categories displayed as a horizontal tab bar above the policy grid. The "All" tab is selected by default. Each tab shows unlocked/total counts (e.g., "Economic (4/11)").
+
+**Categories:** All, Economic (11), Labor (5), Security (6), Diplomatic (4), Institutional (7), Rhetoric (7), Backroom (6).
+
+Within each category, policies are sorted: selected first, then newly unlocked ("New!" badge), then available (by ascending cost), then disabled, then locked.
+
+The tab bar follows the ARIA tablist pattern with arrow key navigation, Home/End keys, and proper focus management.
+
+### Resource Tooltips
+
+Each resource in the sidebar has a context-aware tooltip that explains its current gameplay impact using actual values from the game state. Examples:
+
+- **Inflation (6/30):** "Economic pain (6/30). Above 10, adds +2 rival growth per 5 points. Above 12, currency crisis can trigger."
+- **Polarization (25/100):** "Societal division (25/100). Currently no cost penalty. At 30+, centrist policies cost 25% more."
+- **Narrative (45/100):** "Control of the public story (45/100). Below 50, your rival grows faster."
+
+Tooltips update dynamically as values change. They teach mechanics through play rather than tutorials.
+
+### Resource Trend Arrows
+
+Small colored arrows next to each resource value show the direction of change from the previous turn. Green arrows indicate beneficial changes, red indicates harmful changes, gray indicates stability. For "negative" resources (polarization, inflation, dread), the color coding is inverted (increases are red). Screen readers announce trend descriptions via sr-only text.
+
+---
+
 ## Changelog
+
+### v1.1 (February 2026)
+- Policy category tabs with filtering, sorting, and ARIA tablist navigation
+- Progressive policy unlock system (18 starting, 28 unlockable via turns, loyalty, and resources)
+- Narrative turn briefing system with priority-based vignette selection
+- Context-aware resource tooltips with dynamic threshold explanations
+- Resource trend arrows showing direction of change per turn
+- Enhanced disabled reason display on policy cards (specific requirements shown)
+- 409 tests (up from 308), including unlock system and briefing generation coverage
 
 ### v1.0 (February 2026)
 - Initial documentation of all game mechanics
