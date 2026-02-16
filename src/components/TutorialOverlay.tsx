@@ -102,10 +102,17 @@ const STEPS: TutorialStep[] = [
     mobileBody: 'On mobile, sections are separated into tabs, so there is nothing to collapse. On larger screens, you can collapse sections to reduce scrolling.',
     spotlight: { desktop: 'collapse-chevron' },
   },
-  // 14. Turn Reports
+  // 14. Save & Load
+  {
+    title: 'Save & Load',
+    body: 'You can save your progress at any time with the Save button. If things go sideways, hit Load to restore your last save (it will ask you to confirm first). New Game starts a fresh game from the menu. There is also a "Skip Reports" checkbox if you prefer to skip the narrative briefings between turns.',
+    mobileBody: 'In the Status tab you will find game controls. Save your progress at any time, load a previous save if things go sideways (it asks for confirmation), or start a New Game. The "Skip Reports" checkbox lets you skip narrative briefings between turns.',
+    spotlight: { desktop: 'save-controls', mobile: 'tab-status', mobileTab: 'status' },
+  },
+  // 15. Turn Reports
   {
     title: 'Turn Reports',
-    body: 'After your turn ends, you may see a brief report of what happened across Miranda. These are narrative snapshots, not exhaustive summaries. Pay attention to what the Rival is doing and any crises unfolding. Or press Continue to skip ahead.',
+    body: 'After your turn ends, you may see a brief report of what happened across Miranda. These are narrative snapshots, not exhaustive summaries. Pay attention to what the Rival is doing and any crises unfolding. Or press Continue to skip ahead. If you ever need a refresher, hit the ? button in the top bar to replay this tutorial.',
     // No spotlight — news log is at the bottom of the page and spotlighting it
     // makes the visible viewport tiny. Show this step as a centered card instead.
   },

@@ -50,7 +50,7 @@ export default function SaveControls() {
   const btnConfirm = `${btnBase} bg-amber-700 text-amber-100 hover:bg-amber-600`;
 
   return (
-    <div className="flex items-center gap-2" role="toolbar" aria-label="Game controls">
+    <div className="flex items-center gap-2" role="toolbar" aria-label="Game controls" data-tutorial="save-controls">
       {flash && (
         <span className="text-xs text-green-400 animate-pulse" aria-live="polite">{flash}</span>
       )}

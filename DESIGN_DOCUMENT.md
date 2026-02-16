@@ -1182,6 +1182,17 @@ Uses the desktop sidebar layout. The sidebar width stays at `w-56` and the conte
 
 Full sidebar + main content layout. Bloc cards render in a responsive grid (up to 5 columns at wide viewports) with group section headers (State Power, Capital, Civil Society, Underworld). Cards have subtle hover lift effect (`hover:-translate-y-0.5`).
 
+### Save & Load
+
+The `SaveControls` component (in the desktop header toolbar and mobile Status tab) provides one-click game persistence via `localStorage` (key `miranda-save`). The system includes:
+
+- **Save** button. Serializes the current `GameState` to localStorage instantly, with a green "Saved" flash confirmation. The `currentEvent` is stored by ID rather than by reference, so the save is portable across code changes.
+- **Load** button. Only visible when a saved game exists. Uses a two-click confirmation pattern (first click shows "Confirm load?" in amber, which reverts after 3 seconds if not confirmed). On load, the state is rehydrated from JSON and `currentEvent` is resolved from the `EVENT_POOL` by ID.
+- **New Game** button. Also uses two-click confirmation. Resets to the main menu.
+- **Forward migration.** When new fields are added to `GameState` (e.g., `pendingDiscoveries`, `activeCrises`, `difficulty`, milestones), the load logic provides sensible defaults so older saves load cleanly without data loss.
+
+**Design rationale.** The confirmation-guard pattern prevents accidental loads from wiping in-progress turns. The 3-second timeout balances safety with quick recovery. Flash messages use `aria-live="polite"` for screen reader support.
+
 ### Skip Turn Reports
 
 A `skipBriefings` toggle (stored in GameState, persists across saves) allows players to auto-dismiss turn report modals. Default is off (meditative pacing). When enabled, `TurnBriefing` never appears. The auto-advance countdown timer was removed entirely. Turn reports now wait for the player to click "Continue" or press Enter/Space/Escape.
@@ -1392,7 +1403,7 @@ The tutorial overlay (accessible via the "?" button) highlights relevant UI elem
 
 On mobile, the tutorial auto-switches bottom nav tabs to show the relevant section (e.g., switching to the Status tab when explaining resources).
 
-Steps without a spotlight target (Welcome, Turn Reports) fall back to a centered modal with full dark backdrop. The Turn Reports step was changed from spotlighted to centered because the News Log sits at the bottom of the page and the box-shadow spotlight made the visible viewport tiny. The tutorial has 14 steps including Locked Policies, Collapsing Sections, and Milestones. A scroll listener (capture phase) keeps the spotlight position in sync when the user scrolls during the tutorial.
+Steps without a spotlight target (Welcome, Turn Reports) fall back to a centered modal with full dark backdrop. The Turn Reports step was changed from spotlighted to centered because the News Log sits at the bottom of the page and the box-shadow spotlight made the visible viewport tiny. The tutorial has 15 steps including Locked Policies, Collapsing Sections, Save & Load, and Milestones. A scroll listener (capture phase) keeps the spotlight position in sync when the user scrolls during the tutorial.
 
 **Single instance architecture.** Only one `TutorialOverlay` component exists in Dashboard. The Help button ("?") dispatches a `replay-tutorial` custom DOM event, which Dashboard listens for and sets `forceShow` on the single instance. This ensures consistent behavior (including mobile tab switching) whether it's a first-time tutorial or a replay.
 
