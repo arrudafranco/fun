@@ -279,6 +279,11 @@ export default function PolicyPicker() {
       <span className="text-xs text-slate-400 ml-auto">
         {selected.length}/2 selected, {remainingCapital} capital left
       </span>
+      {!isMobile && (
+        <button onClick={handleEndTurn} className={endTurnButtonClass}>
+          {endTurnButtonText}
+        </button>
+      )}
     </div>
   );
 
@@ -325,15 +330,11 @@ export default function PolicyPicker() {
     </div>
   ) : null;
 
-  // Desktop: End Turn in header area; toggles grouped left, End Turn visually separated
+  // Desktop header right: only toggles (keeps alignment consistent with other sections)
   const desktopHeaderRight = !isMobile ? (
     <>
       {lockedToggle}
       {viewToggle}
-      <div className="w-px h-5 bg-slate-600/50 mx-1" aria-hidden="true" />
-      <button onClick={handleEndTurn} className={endTurnButtonClass}>
-        {endTurnButtonText}
-      </button>
     </>
   ) : null;
 
