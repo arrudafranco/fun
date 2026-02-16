@@ -1132,7 +1132,7 @@ Uses the desktop sidebar layout. The sidebar width stays at `w-56` and the conte
 
 ### Desktop (>=1024px)
 
-Full sidebar + main content layout. Bloc cards render in a responsive grid (up to 5 columns at wide viewports) with group section headers (State Power, Capital, Culture, Labor, Shadow). Cards have subtle hover lift effect (`hover:-translate-y-0.5`).
+Full sidebar + main content layout. Bloc cards render in a responsive grid (up to 5 columns at wide viewports) with group section headers (State Power, Capital, Civil Society, Underworld). Cards have subtle hover lift effect (`hover:-translate-y-0.5`).
 
 ### Skip Turn Reports
 
@@ -1332,7 +1332,7 @@ Small colored arrows next to each resource value show the direction of change fr
 
 ### v1.3 (February 2026)
 - Mobile-responsive redesign with bottom tab navigation (Blocs, Actions, Status, News)
-- Compact BlocCard accordion mode for mobile with group headers (State Power, Capital, Culture, Labor, Shadow)
+- Compact BlocCard accordion mode for mobile with group headers (State Power, Capital, Civil Society, Underworld)
 - Compact PolicyCard list mode for mobile with PolicyDetailSheet bottom sheet
 - Fullwidth ResourceSidebar variant for mobile Status tab
 - Skip turn reports toggle (persists across saves, default off)

@@ -10,9 +10,8 @@ interface BlocGroup {
 const BLOC_GROUPS: BlocGroup[] = [
   { label: 'State Power', color: 'border-rose-500/50', blocs: ['court', 'military', 'enforcers'] },
   { label: 'Capital', color: 'border-emerald-500/50', blocs: ['finance', 'industry', 'tech', 'agri', 'mainStreet'] },
-  { label: 'Culture', color: 'border-amber-500/50', blocs: ['media', 'clergy', 'academy', 'artists'] },
-  { label: 'Labor', color: 'border-violet-500/50', blocs: ['labor'] },
-  { label: 'Shadow', color: 'border-slate-500/50', blocs: ['syndicate'] },
+  { label: 'Civil Society', color: 'border-amber-500/50', blocs: ['media', 'clergy', 'academy', 'artists', 'labor'] },
+  { label: 'Underworld', color: 'border-slate-500/50', blocs: ['syndicate'] },
 ];
 
 interface BlocGridProps {
