@@ -1,6 +1,6 @@
 # Miranda Republic -- Game Mechanics Documentation
 
-*Last updated: v1.6 (February 2026)*
+*Last updated: v1.7 (February 2026)*
 
 This document describes all game mechanics, systems, and design rationale in detail. It is intended as a reference for development, balance tuning, and onboarding.
 
