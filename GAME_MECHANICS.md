@@ -87,7 +87,7 @@ Eight tracked resources govern the state of Miranda. Each has a defined range.
 - **Capital** comes from: base income per turn (difficulty-dependent: 10/5/3), trade income (based on Colossus trade dependency and alignment), policies that generate capital, and low central bank independence (+3/turn).
 - **Legitimacy** changes from: congressional majority status (+1/-1 per turn), central bank independence (high CBI gives +1/turn), policies, events, and discovery scandals. Story mode has a legitimacy decay shield that reduces losses by up to 3 per turn.
 - **Narrative** is primarily driven by the narrative phase (cultural bloc loyalties) and modified by policies and events.
-- **Mobilization** is gained through populist, labor, and green policies. Lost through austerity and backlash.
+- **Mobilization** is gained through labor, green, and mass-appeal policies. Lost through austerity and backlash.
 
 ---
 
@@ -108,22 +108,22 @@ Each bloc has two sensitivity scores (0-100) that act as multipliers for how str
 
 ### All 14 Blocs
 
-| Bloc | Player-Facing Name | Ideology | Start Loyalty | Start Power | Material / Narrative Sensitivity |
-|---|---|---|---|---|---|
-| court | The Court | 0 (center) | 60 | 70 | 70 / 30 |
-| military | The Generals | +30 (right) | 50 | 80 | 75 / 40 |
-| enforcers | The Enforcers | +40 (right) | 45 | 50 | 70 / 55 |
-| finance | The Banks | +20 (right) | 55 | 85 | 85 / 35 |
-| industry | The Factories | +15 (right) | 45 | 55 | 80 / 30 |
-| tech | Big Tech | +10 (right) | 50 | 60 | 65 / 55 |
-| agri | The Landowners | +30 (right) | 50 | 55 | 75 / 25 |
-| mainStreet | Main Street | +15 (right) | 50 | 40 | 55 / 65 |
-| media | The Heralds | -5 (center-left) | 55 | 65 | 60 / 70 |
-| clergy | The Clergy | +45 (right) | 45 | 50 | 55 / 65 |
-| academy | The Scholars | -30 (left) | 50 | 35 | 65 / 50 |
-| artists | The Artists | -40 (left) | 45 | 30 | 55 / 70 |
-| labor | The Unions | -35 (left) | 45 | 45 | 70 / 45 |
-| syndicate | The Underworld | 0 (neutral) | 35 | 40 | 90 / 10 |
+| Bloc | Player-Facing Name | Start Loyalty | Start Power | Material / Narrative Sensitivity |
+|---|---|---|---|---|
+| court | The Court | 60 | 70 | 70 / 30 |
+| military | The Generals | 50 | 80 | 75 / 40 |
+| enforcers | The Enforcers | 45 | 50 | 70 / 55 |
+| finance | The Banks | 55 | 85 | 85 / 35 |
+| industry | The Factories | 45 | 55 | 80 / 30 |
+| tech | Big Tech | 50 | 60 | 65 / 55 |
+| agri | The Landowners | 50 | 55 | 75 / 25 |
+| mainStreet | Main Street | 50 | 40 | 55 / 65 |
+| media | The Heralds | 55 | 65 | 60 / 70 |
+| clergy | The Clergy | 45 | 50 | 55 / 65 |
+| academy | The Scholars | 50 | 35 | 65 / 50 |
+| artists | The Artists | 45 | 30 | 55 / 70 |
+| labor | The Unions | 45 | 45 | 70 / 45 |
+| syndicate | The Underworld | 35 | 40 | 90 / 10 |
 
 ---
 
@@ -181,43 +181,257 @@ Backroom policies marked `targetBloc: true` let the player choose which bloc rec
 - **Informal Channels**: +10 loyalty to the chosen bloc (requires Underworld loyalty >= 40).
 - **Blackmail Dossier**: +15 loyalty to the chosen bloc.
 
-### Key Policies Reference
+### Complete Policy Reference (All 46 Policies)
 
-#### Backroom Policies (and Why They Matter)
+#### Economic Policies (11)
 
-**Backroom Appropriations** ("Grease the wheels"): Costs 20 capital. Gives +15 loyalty to a chosen bloc but costs -5 legitimacy. Has a 30% discovery chance (delayed 3 turns). If discovered, the Court loses -10 loyalty, the Heralds lose -15, narrative drops -8, and the rival gains +5 power. The Underworld's high loyalty (> 60) halves the discovery chance and gives a 30% cost discount.
+**Austerity Budget** (Cost: 0, Centrist, Pol: 0-70)
+- Blocs: Banks +15/+5p, Factories -5, Unions -20, Artists -10, Scholars -10, Main Street +5
+- Resources: Capital +30, Mobilization -10, Polarization +5, Colossus Alignment +5, Narrative -5
+- Labor cohesion: -5
 
-**Informal Channels** ("The Underworld knows people"): Costs 15 capital. Requires Underworld loyalty >= 40. Gives +10 loyalty to a chosen bloc and +3 dread. Has a 20% discovery chance (delayed 4 turns) with even harsher penalties if caught: Court -15, Heralds -20, legitimacy -10, narrative -12, rival +8. This is why Informal Channels is unavailable at the start... the Underworld starts at 35 loyalty, which is below the 40 threshold. You need to build trust with the Underworld first.
+**Green Industrial Policy** (Cost: 35, Non-centrist, Pol: 0-75)
+- Blocs: Factories +10, Unions +15, Scholars +20, Artists +10, Landowners -15, Banks -10, Main Street -5
+- Resources: Mobilization +10, Polarization +3, Colossus Alignment -5, Narrative +5
+- Labor cohesion: +5
 
-**Blackmail Dossier**: Costs 10 capital. +15 loyalty to chosen bloc, +5 dread, -3 legitimacy. 35% discovery chance (2-turn delay) with severe penalties.
+**Price Controls Decree** (Cost: 3, Non-centrist, Pol: 0-90)
+- Blocs: Banks -3, Main Street +5, Unions +5
+- Resources: Inflation -4
 
-**Offshore Accounts**: Costs 5 capital. Gives +30 capital immediately. Banks +5, Underworld +5, but legitimacy -5. 25% discovery chance (4-turn delay) with devastating exposure: Court -20, Heralds -15, legitimacy -20, narrative -15, rival +10.
+**Stimulus Package** (Cost: 4, Centrist, Pol: 0-80)
+- Blocs: Banks -2, Main Street +5, Unions +5, Factories +3
+- Resources: Inflation -3, Legitimacy +3
 
-**Palace Coup Insurance**: Costs 25 capital. Generals +15, Enforcers +5. Buys military loyalty directly but costs -3 legitimacy and +3 dread.
+**Sovereign Wealth Fund** (Cost: 40, Centrist, Pol: 0-60)
+- Blocs: Banks +10, Scholars +5, Unions -5
+- Resources: Legitimacy +3, Colossus Alignment +5
+- Delayed: +8 capital/turn for 8 turns (64 total return)
 
-**Shadow Cabinet**: Costs 15 capital. Underworld +10, mobilization +5, dread +5, legitimacy -5. 30% discovery risk with catastrophic exposure penalties.
+**Black Market Crackdown** (Cost: 15, Centrist, Pol: 0-80)
+- Blocs: Underworld -15/-5p, Enforcers +5, Banks +5, Main Street +3
+- Resources: Inflation -2, Dread +3
 
-#### Rhetoric Policies
+**Tourism Initiative** (Cost: 20, Centrist, Pol: 0-70)
+- Blocs: Artists +5, Main Street +5, Landowners +3
+- Resources: Narrative +3
+- Delayed: +5 capital/turn for 6 turns (30 total return)
 
-**The Blame Game** (Scapegoat Campaign): Costs 5 capital. Requires polarization >= 40 (this is why it's unavailable early, polarization starts at 25). Gives Main Street +10, Clergy +5, but Artists -15, Scholars -10. Raises polarization +8 and mobilization +5, lowers narrative -3, and reduces rival power -3. Significantly damages labor cohesion (-8). A high-impact short-term tool with long-term costs.
+**Trade Liberalization** (Cost: 10, Centrist, Pol: 0-80)
+- Blocs: Banks +10, Big Tech +5, Factories -10, Unions -5
+- Resources: Inflation -2, Colossus Alignment +10
 
-**Public Reconciliation Forum**: Costs 2 capital. A cheap centrist tool that reduces polarization -5, gives narrative +3, and reduces rival power -2.
+**Emergency Austerity** (Cost: 0, Centrist, Pol: 0-90)
+- Blocs: Banks +10, Unions -15, Artists -10, Scholars -5, Main Street -5
+- Resources: Capital +25, Mobilization -5, Narrative -5
+- Rival power: +2
 
-**Counter-Propaganda Bureau**: Costs 3 capital. Narrative +5, rival -4, but polarization +3 and Scholars -5.
+**Microfinance Program** (Cost: 15, Centrist, Pol: 0-70)
+- Blocs: Main Street +10, Unions +5, Banks -3
+- Resources: Legitimacy +2
+- Delayed: +3 capital/turn for 4 turns (12 total return), +1 cohesion/turn during delay
 
-**State Media Blitz**: Costs 10 capital. Heralds +10, narrative +8, but Scholars -5 and Artists -3.
+**Interest Rate Override** (Cost: 5, Non-centrist, Pol: 20-100)
+- Blocs: Banks -10, Main Street +5
+- Resources: Inflation -3
+- Central bank independence: -10
 
-**Populist Pivot**: Costs 3 capital. Main Street +10, Unions +5, mobilization +5, rival -2, but Banks -10 and polarization +3.
+#### Labor Policies (5)
 
-#### Notable Other Policies
+**Platform Worker Rights Act** (Cost: 10, Non-centrist, Pol: 0-80)
+- Blocs: Unions +20, Big Tech -25/-5p, Main Street -5, Banks -10, Artists +5
+- Resources: Polarization +5, Narrative +3
+- Labor cohesion: +5
+- Conditional effects: If Union loyalty > 60 AND narrative > 50, additional cohesion +8. If Union loyalty 40-60 OR narrative 30-50, additional cohesion +3. If Union loyalty < 40 OR narrative < 30, cohesion -3 and Main Street -5.
 
-**Green Industrial Policy**: Costs 35 capital. One of the most expensive policies. Boosts Factories, Unions, Scholars, Artists, mobilization, and narrative. Angers Landowners and Banks. Good for labor cohesion.
+**Minimum Wage Hike** (Cost: 10, Non-centrist, Pol: 0-80)
+- Blocs: Unions +15, Main Street +5, Factories -10, Banks -5
+- Resources: Inflation +1, Narrative +3
+- Labor cohesion: +5
 
-**Sovereignty Trade Package**: Costs 20 capital. Boosts domestic industry and Unions. Reduces Colossus alignment -15. Creates delayed income (+5 capital/turn for 6 turns).
+**Gig Worker Protections** (Cost: 8, Non-centrist, Pol: 0-80)
+- Blocs: Unions +10, Big Tech -15, Scholars +5
+- Resources: Narrative +2, Polarization +3
+- Labor cohesion: +3
 
-**Sovereign Wealth Fund**: Costs 40 capital (most expensive). Long-term investment: +8 capital/turn for 8 turns (64 total return on 40 investment).
+**Apprenticeship Program** (Cost: 12, Centrist, Pol: 0-70)
+- Blocs: Unions +5, Factories +10, Scholars +5
+- Resources: Legitimacy +2
+- Labor cohesion: +3
+- Delayed: +2 cohesion/turn for 6 turns (no capital, pure long-term cohesion investment)
 
-**Constitutional Amendment**: Costs 20 capital. Requires congressional majority. Court +10, Scholars +10, legitimacy +8. One of the strongest legitimacy-building tools.
+**Right to Strike Guarantee** (Cost: 5, Non-centrist, Pol: 10-90)
+- Blocs: Unions +15, Factories -10, Banks -5
+- Resources: Mobilization +5, Polarization +5
+- Labor cohesion: +8
+
+#### Security Policies (6)
+
+**Operation Clean Sweep** (Cost: 25, Centrist, Pol: 0-90)
+- Blocs: Enforcers +15/+5p, Underworld -25/-10p, Main Street +10, Court +5, Unions +5
+- Resources: Dread +10, Legitimacy +5, Narrative +3
+
+**Community Policing Initiative** (Cost: 2, Centrist, Pol: 0-80)
+- Blocs: Enforcers +3, Main Street +5, Unions +3
+- Resources: Dread -3
+- Rival power: -2
+
+**Border Militarization** (Cost: 20, Non-centrist, Pol: 0-90)
+- Blocs: Generals +10/+5p, Enforcers +5, Main Street +5, Artists -10, Scholars -5
+- Resources: Dread +5, Colossus Alignment -5, Polarization +3
+
+**Surveillance Network** (Cost: 25, Non-centrist, Pol: 0-90)
+- Blocs: Enforcers +10, Big Tech +5, Artists -10, Scholars -10, Heralds -5
+- Resources: Dread +8, Narrative -3
+- Rival power: -3
+
+**Amnesty Program** (Cost: 5, Centrist, Pol: 0-70)
+- Blocs: Underworld +10, Court -10, Enforcers -5, Clergy +5
+- Resources: Polarization -3, Dread -5, Legitimacy -3
+
+**Paramilitary Disbandment** (Cost: 10, Centrist, Pol: 0-80)
+- Blocs: Generals -5, Enforcers -5, Court +10, Scholars +5
+- Resources: Dread -8, Legitimacy +5, Polarization -3
+- Rival power: -2
+
+#### Diplomatic Policies (4)
+
+**Sovereignty Trade Package** (Cost: 20, Centrist, Pol: 0-90)
+- Blocs: Factories +15, Unions +10, Banks -20, Big Tech -10
+- Resources: Colossus Alignment -15, Narrative +3
+- Labor cohesion: +3
+- Delayed: +5 capital/turn for 6 turns (30 total return)
+
+**Foreign Aid Package** (Cost: 0, Centrist, Pol: 0-80)
+- Blocs: Banks +5, Unions -3
+- Resources: Capital +35, Colossus Alignment +8, Legitimacy -2
+
+**Embassy Expansion** (Cost: 15, Centrist, Pol: 0-70)
+- Blocs: Scholars +5, Court +3
+- Resources: Colossus Alignment +5, Narrative +2, Legitimacy +2
+
+**Colossus Trade Deal** (Cost: 5, Centrist, Pol: 0-80)
+- Blocs: Banks +10, Factories -10, Unions -5, Big Tech +5
+- Resources: Colossus Alignment +12, Inflation -2
+- Delayed: +6 capital/turn for 6 turns (36 total return)
+
+#### Institutional Policies (7)
+
+**Anti-Money Laundering Act** (Cost: 15, Centrist, Pol: 0-70)
+- Blocs: Banks -15, Underworld -15, Court +10, Scholars +5
+- Resources: Legitimacy +5, Narrative +3, Colossus Alignment +3
+
+**National Unity Festival** (Cost: 2, Centrist, Pol: 0-70)
+- Blocs: Artists +3, Main Street +3, Clergy +3
+- Resources: Polarization -4, Narrative +2
+- Rival power: -1
+
+**Constitutional Amendment** (Cost: 20, Centrist, Pol: 0-60, Requires majority)
+- Blocs: Court +10, Scholars +10, Clergy -5
+- Resources: Legitimacy +8, Narrative +3, Polarization +3
+
+**Electoral Reform** (Cost: 15, Centrist, Pol: 0-70, Requires majority)
+- Blocs: Court +5, Scholars +5, Main Street +5
+- Resources: Legitimacy +5, Polarization -3
+- Rival power: -2
+
+**Judicial Appointment** (Cost: 10, Non-centrist, Pol: 0-80)
+- Blocs: Court +15, Scholars -5, Heralds -5
+- Resources: Legitimacy +3, Narrative -2, Polarization +3
+
+**Central Bank Autonomy Act** (Cost: 10, Centrist, Pol: 0-70)
+- Blocs: Banks +10, Unions -5, Artists -5
+- Resources: Legitimacy +3
+- Central bank independence: +15
+
+**Monetary Sovereignty Decree** (Cost: 15, Non-centrist, Pol: 0-80)
+- Blocs: Banks -15, Factories +5, Unions +10
+- Resources: Narrative +3
+- Central bank independence: -20
+
+#### Rhetoric Policies (7)
+
+**The Blame Game** (Cost: 5, Non-centrist, Pol: 40-100)
+- Blocs: Main Street +10, Clergy +5, Artists -15, Scholars -10
+- Resources: Polarization +8, Mobilization +5, Narrative -3
+- Labor cohesion: -8
+- Rival power: -3
+- Unavailable at game start (polarization starts at 25, requires >= 40)
+
+**Public Reconciliation Forum** (Cost: 2, Centrist, Pol: 0-80)
+- Blocs: Heralds +5, Artists +3, Clergy +3
+- Resources: Polarization -5, Narrative +3
+- Rival power: -2
+
+**Counter-Propaganda Bureau** (Cost: 3, Non-centrist, Pol: 10-100)
+- Blocs: Heralds +5, Scholars -5
+- Resources: Polarization +3, Narrative +5
+- Rival power: -4
+
+**State Media Blitz** (Cost: 10, Non-centrist, Pol: 0-90)
+- Blocs: Heralds +10, Scholars -5, Artists -3
+- Resources: Narrative +8, Polarization +3
+
+**Whistleblower Hotline** (Cost: 5, Centrist, Pol: 0-70)
+- Blocs: Court +5, Scholars +5, Underworld -10
+- Resources: Legitimacy +5, Narrative +3
+
+**Historical Revisionism** (Cost: 5, Non-centrist, Pol: 20-100)
+- Blocs: Scholars -15, Clergy +5, Main Street +5
+- Resources: Narrative +5, Polarization +5, Legitimacy -3
+
+**Populist Pivot** (Cost: 3, Non-centrist, Pol: 20-100)
+- Blocs: Main Street +10, Unions +5, Banks -10, Scholars -5
+- Resources: Mobilization +5, Narrative +3, Polarization +3
+- Rival power: -2
+
+#### Backroom Policies (6)
+
+All backroom policies bypass congressional cost modifiers and sensitivity scaling. Discovery chance is halved if Underworld loyalty > 60. Backroom costs are reduced 30% if Underworld loyalty > 60.
+
+**Backroom Appropriations** (Cost: 20, Non-centrist, Pol: 0-100, Target bloc)
+- Gives +15 loyalty to chosen bloc
+- Resources: Legitimacy -5
+- Discovery: 30% chance, 3-turn delay. If exposed: Court -10, Heralds -15, Narrative -8, Rival +5
+
+**Informal Channels** (Cost: 15, Non-centrist, Pol: 0-100, Target bloc, Requires Underworld loyalty >= 40)
+- Gives +10 loyalty to chosen bloc
+- Resources: Dread +3
+- Discovery: 20% chance, 4-turn delay. If exposed: Court -15, Heralds -20, Legitimacy -10, Narrative -12, Rival +8
+- Unavailable at game start (Underworld starts at 35 loyalty, requires >= 40)
+
+**Blackmail Dossier** (Cost: 10, Non-centrist, Pol: 0-100, Target bloc)
+- Gives +15 loyalty to chosen bloc
+- Resources: Dread +5, Legitimacy -3
+- Discovery: 35% chance, 2-turn delay. If exposed: Court -15, Heralds -20, Legitimacy -15, Narrative -10, Rival +8
+
+**Offshore Accounts** (Cost: 5, Non-centrist, Pol: 0-100)
+- Blocs: Banks +5, Underworld +5
+- Resources: Capital +30, Legitimacy -5
+- Discovery: 25% chance, 4-turn delay. If exposed: Court -20, Heralds -15, Legitimacy -20, Narrative -15, Rival +10
+
+**Palace Coup Insurance** (Cost: 25, Non-centrist, Pol: 0-100)
+- Blocs: Generals +15, Enforcers +5
+- Resources: Dread +3, Legitimacy -3
+- Discovery: 20% chance, 3-turn delay. If exposed: Court -10, Scholars -10, Legitimacy -10, Narrative -8, Rival +6
+
+**Shadow Cabinet** (Cost: 15, Non-centrist, Pol: 0-100)
+- Blocs: Underworld +10
+- Resources: Mobilization +5, Dread +5, Legitimacy -5
+- Discovery: 30% chance, 3-turn delay. If exposed: Court -20, Heralds -15, Scholars -10, Legitimacy -20, Narrative -15, Rival +12
+
+### Delayed Effects Reference
+
+Policies with delayed effects create per-turn bonuses that tick for a set number of turns after use.
+
+| Policy | Delay Duration | Per-Turn Effect | Total Return | Other |
+|---|---|---|---|---|
+| Sovereign Wealth Fund | 8 turns | +8 capital | 64 capital | Best long-term ROI |
+| Colossus Trade Deal | 6 turns | +6 capital | 36 capital | -- |
+| Sovereignty Trade Package | 6 turns | +5 capital | 30 capital | -- |
+| Tourism Initiative | 6 turns | +5 capital | 30 capital | -- |
+| Microfinance Program | 4 turns | +3 capital | 12 capital | Also +1 cohesion/turn |
+| Apprenticeship Program | 6 turns | -- | -- | +2 cohesion/turn only |
 
 ---
 
@@ -511,7 +725,7 @@ Having any pending discoveries is one of the trigger conditions for the Media Sc
 
 ## Events
 
-Events are narrative moments that introduce external pressures and player choices. There are 40+ events in the pool.
+Events are narrative moments that introduce external pressures and player choices. There are 53 events in total (6 rival threshold, 1 resource threshold, 5 loyalty threshold, 26 random, and 15 crisis chain stage events).
 
 ### Event Types by Trigger
 
@@ -532,21 +746,161 @@ Events are narrative moments that introduce external pressures and player choice
 
 When multiple events are eligible in one turn: rival threshold events > loyalty threshold events > random events. Only one event fires per turn (plus any crisis chain events in the queue).
 
+### Rival Threshold Events (6, all one-shot)
+
+**The Rally** (Rival power >= 30) -- Player choice
+- "Let the Heralds cover it": Heralds +5, Polarization +3
+- "Pressure the Heralds to downplay it": Heralds -5, Rival +5
+
+**Congressional Gridlock** (Rival power >= 50) -- Auto-resolve
+- Polarization +5, Main Street -5
+- Activates gridlock countdown (4 turns of +20% cost on all policies)
+
+**Culture War Offensive** (Rival power >= 60) -- Auto-resolve
+- Artists -5, Scholars -5, Polarization +8, Labor cohesion -10
+- Activates culture war countdown (4 turns; Clergy and Main Street lose -5 loyalty/turn if their loyalty < 50)
+
+**Crisis of Legitimacy** (Rival power >= 70, requires Court loyalty <= 60) -- Auto-resolve
+- Legitimacy -10, Polarization +5
+
+**The Oligarch's Bet** (Rival power >= 85) -- Auto-resolve
+- Capital -20, Polarization +5, Rival +5
+
+**March on Miranda** (Rival power >= 95) -- Auto-resolve
+- Polarization +10, Narrative -20, Legitimacy -10
+
+### Resource Threshold Events (1, one-shot)
+
+**Joint Exercises** (Colossus Alignment > 70) -- Player choice
+- "Welcome the advisors": Generals +10, Colossus Alignment +10, Dread +3
+- "Politely decline": Generals -5, Colossus Alignment -10, Legitimacy +5
+
+### Loyalty Threshold Events (5, repeatable)
+
+**Capital Flight** (Banks loyalty < 30) -- Auto-resolve
+- Capital -15, Inflation +2, Banks -5p
+
+**Constitutional Review** (Court loyalty < 35) -- Auto-resolve
+- Legitimacy -5, Narrative -3, Rival +3
+
+**Military "Readiness Exercises"** (Generals loyalty < 25) -- Auto-resolve
+- Dread +5, Legitimacy -3
+
+**A Message** (Underworld loyalty < 15) -- Auto-resolve
+- Legitimacy -3, Narrative -5, Main Street -3
+
+**The Sermon** (Clergy loyalty < 30) -- Auto-resolve
+- Narrative -3, Main Street -3, Rival +2
+
+### Random Events (26)
+
+**Currency Crisis** (Weight: 3, Condition: Inflation > 12) -- Player choice
+- "Raise interest rates": Inflation -3, Capital -15, Banks +10, Unions -10, Factories -5
+- "Ride it out": Inflation +2, Banks -10, Rival +3
+
+**The Colossus Extends a Hand** (Weight: 3) -- Player choice
+- "Accept the loan": Capital +40, Colossus Alignment +10, Banks +10, Factories -5, Unions -5
+- "Politely decline": Colossus Alignment -5, Factories +5, Unions +5
+
+**An Envelope on Your Desk** (Weight: 2, Condition: Underworld loyalty >= 30) -- Player choice
+- "Open the envelope": Legitimacy -5, Dread +3, Underworld +10
+- "Return it unopened": Underworld -10, Court +5, Legitimacy +3
+
+**Strike Warning** (Weight: 2, Condition: Union loyalty < 35) -- Auto-resolve
+- Mobilization -5, Unions -5, Main Street -3, Rival +2
+
+**Data Breach** (Weight: 2) -- Player choice
+- "Push emergency data regulations": Big Tech -15, Scholars +5, Main Street +5, Narrative +3, Legitimacy +3
+- "Express concern, do nothing": Big Tech +5, Scholars -5, Narrative -3, Rival +2
+
+**The Exposé** (Weight: 2, Condition: Heralds loyalty > 40) -- Player choice
+- "Cooperate with the investigation": Heralds +10, Underworld -5, Legitimacy +5, Narrative +3
+- "Discredit the story": Heralds -15, Narrative -5, Rival +3
+
+**Wildcat Strike** (Weight: 2, Condition: Union loyalty > 55) -- Player choice
+- "Back the strikers": Unions +10, Factories -10, Banks -5, Mobilization +5, Cohesion +10
+- "Enforce existing contracts": Unions -10, Factories +5, Banks +5, Cohesion -5
+
+**The Automation Wave** (Weight: 3) -- Player choice
+- "Impose an automation tax": Big Tech -10, Unions +10, Main Street +5, Capital +10
+- "Embrace the future": Big Tech +10, Unions -10, Scholars +5, Inflation -1, Cohesion -5
+
+**The Drought** (Weight: 2) -- Player choice
+- "Declare agricultural emergency": Landowners +10, Main Street +5, Capital -20, Legitimacy +3
+- "Let the market adjust": Landowners -10, Banks +5, Inflation +2, Rival +3
+
+**The Protection Racket** (Weight: 2, Condition: Underworld loyalty >= 40) -- Player choice
+- "Look the other way": Underworld +5, Main Street -8, Dread +3
+- "Send the Enforcers": Underworld -15, Main Street +5, Enforcers +3, Legitimacy +3
+
+**The Cargo Ship** (Weight: 2, Condition: Underworld loyalty >= 30) -- Player choice
+- "Clear the cargo": Underworld +10, Capital +15, Legitimacy -3, Dread +2
+- "Seize the shipment": Underworld -10, Court +5, Legitimacy +3
+
+**A Favor Owed** (Weight: 2, Condition: Underworld loyalty >= 50) -- Player choice
+- "Pay the favor": Underworld +10, Court -5, Legitimacy -5, Dread +3
+- "Refuse politely": Underworld -15, Dread +5
+
+**The Informant** (Weight: 2, Condition: Underworld loyalty >= 35 AND Rival power > 40) -- Player choice
+- "Buy the intelligence": Underworld +5, Legitimacy -3, Dread +2, Rival -5
+- "Decline the offer": Underworld -5, Legitimacy +2
+
+**The Ballot Box** (Weight: 1, Condition: Underworld loyalty >= 45) -- Player choice
+- "Accept the help": Underworld +10, Legitimacy -8, Narrative +3, Dread +3, Rival -3
+- "Reject it absolutely": Underworld -10, Court +5, Legitimacy +5
+
+**The Flood** (Weight: 2) -- Player choice
+- "Launch massive relief effort": Capital -30, Legitimacy +5, Narrative +5, Main Street +10, Landowners +5, Clergy +5
+- "Issue statements of concern": Main Street -10, Landowners -5, Rival +5
+
+**The Celebrity** (Weight: 2) -- Player choice
+- "Welcome the endorsement": Artists +5, Main Street +5, Narrative +5
+- "Keep a professional distance": Scholars +3, Legitimacy +2
+
+**The State Visit** (Weight: 2) -- Player choice
+- "Spare no expense": Capital -15, Colossus Alignment +5, Narrative +3, Banks +3
+- "Keep it simple": Colossus Alignment +2, Legitimacy +2
+
+**Campus Unrest** (Weight: 2, Condition: Polarization > 35) -- Player choice
+- "Meet with student leaders": Scholars +10, Artists +5, Narrative +3, Mobilization +3
+- "Clear the building": Scholars -10, Enforcers +3, Dread +3, Narrative -3, Rival +2
+
+**The Festival of Saints** (Weight: 2) -- Player choice
+- "Sponsor the festival": Clergy +10, Artists +3, Capital -10, Narrative +3
+- "Attend but don't sponsor": Clergy +3, Scholars +3, Legitimacy +2
+
+**The Miranda Valley** (Weight: 2) -- Player choice
+- "Offer tax incentives": Big Tech +10, Banks +5, Unions -5, Capital -10, Inflation -1
+- "Regulate first": Big Tech -5, Unions +5, Scholars +3, Legitimacy +2
+
+**The Blight** (Weight: 2, Condition: Landowners loyalty > 20) -- Player choice
+- "Emergency farm subsidies": Landowners +15, Banks -5, Capital -20, Legitimacy +3
+- "Import substitute crops": Landowners -10, Main Street +5, Colossus Alignment +3, Inflation -1
+
+**The Deep Dive** (Weight: 2, Condition: Heralds loyalty 30-70) -- Player choice
+- "Announce spending reforms": Heralds +5, Scholars +5, Legitimacy +5, Capital -10
+- "Question the methodology": Heralds -10, Narrative -3, Rival +2
+
+**The Miranda Renaissance** (Weight: 2, Condition: Artists loyalty > 50) -- Auto-resolve
+- Artists +5, Scholars +3, Narrative +5, Legitimacy +3
+
+**The Border Incident** (Weight: 2) -- Player choice
+- "Deploy military reinforcements": Generals +10, Dread +5, Colossus Alignment -3, Capital -15
+- "Pursue diplomatic channels": Generals -3, Scholars +3, Colossus Alignment +3, Legitimacy +3
+
+**The Economic Summit** (Weight: 2) -- Player choice
+- "Present ambitious reforms": Narrative +5, Colossus Alignment +5, Legitimacy +3, Banks +3, Scholars +3
+- "Play it safe": Colossus Alignment +3, Legitimacy +2
+
+**Labor Day Rally** (Weight: 2, Condition: Union loyalty > 40) -- Player choice
+- "Join the march": Unions +10, Banks -5, Mobilization +5, Narrative +3, Cohesion +5
+- "Send a message of support": Unions +3, Narrative +1
+
 ---
 
 ## Crisis Chains
 
 Crisis chains are multi-stage escalating emergencies that unfold over consecutive turns.
-
-### Active Chains
-
-| Chain | Trigger | Stages |
-|---|---|---|
-| **Banking Crisis** | Inflation > 18 | Bank Run Rumors -> Credit Freeze -> Banking Resolution |
-| **Military Restlessness** | Generals loyalty < 25 | Barracks Rumors -> Officers' Ultimatum -> The Loyalty Question |
-| **Labor Uprising** | Union loyalty < 20 AND cohesion > 60 | Rolling Strikes -> General Shutdown |
-| **Media Scandal** | Pending discoveries exist OR Heralds loyalty < 35 | The Leak -> Investigation -> Verdict |
-| **Colossus Pressure** | Colossus patience < 20 | Diplomatic Warning -> Sanctions -> Ultimatum |
 
 ### How Chains Work
 
@@ -555,6 +909,69 @@ Crisis chains are multi-stage escalating emergencies that unfold over consecutiv
 3. Events with player choices are queued and shown in the next turn's News phase.
 4. Events without choices auto-resolve immediately.
 5. Chains are one-shot... once the first stage fires, the chain won't re-trigger.
+
+### Banking Crisis (3 stages, Trigger: Inflation > 18)
+
+**Stage 1: Bank Run Rumors** -- Player choice
+- "Guarantee all deposits": Capital -30, Legitimacy +3, Banks +10, Main Street +5
+- "Let the market correct": Inflation +2, Banks -10, Rival +3
+
+**Stage 2: Credit Freeze** -- Auto-resolve
+- Capital -20, Inflation +3, Banks -5, Factories -5, Main Street -5, Rival +3
+
+**Stage 3: The Banking Resolution** -- Player choice
+- "Bail out the banks": Capital -40, Legitimacy -5, Banks +15, Main Street -10, Unions -10
+- "Nationalize failing banks": Banks -20/-10p, Unions +10, Main Street +5, Legitimacy +5, Polarization +5
+
+### Military Restlessness (3 stages, Trigger: Generals loyalty < 25)
+
+**Stage 1: Barracks Rumors** -- Player choice
+- "Increase military pay": Capital -25, Generals +10
+- "Hold private meetings": Generals +5, Dread +3
+
+**Stage 2: The Officers' Ultimatum** -- Player choice
+- "Accept their demands": Generals +15, Capital -30, Legitimacy -5, Dread +5
+- "Call their bluff": Generals -10, Legitimacy +5, Rival +5
+
+**Stage 3: The Loyalty Question** -- Player choice
+- "Purge disloyal officers": Generals +10/-10p, Enforcers +5, Dread +10, Legitimacy -5
+- "Hold a unity ceremony": Generals +5, Narrative +5, Legitimacy +3
+
+### Labor Uprising (2 stages, Trigger: Union loyalty < 20 AND labor cohesion > 60)
+
+**Stage 1: Rolling Strikes** -- Player choice
+- "Open negotiations": Unions +10, Factories -5, Capital -15, Cohesion +10
+- "Send in the Enforcers": Unions -15, Enforcers +5, Factories +5, Dread +8, Mobilization -10, Cohesion -15
+
+**Stage 2: The General Shutdown** -- Player choice
+- "Propose a grand bargain": Unions +10, Banks -5, Factories -5, Capital -25, Legitimacy +5, Cohesion +15, Rival -3
+- "Declare a state of emergency": Unions -20, Generals +10, Main Street -10, Dread +15, Legitimacy -10, Cohesion -20, Rival +5
+
+### Media Scandal (3 stages, Trigger: Pending discoveries exist OR Heralds loyalty < 35)
+
+**Stage 1: The Leak** -- Player choice
+- "Deny everything": Heralds -10, Narrative -5, Rival +3
+- "Get ahead of the story": Heralds +5, Legitimacy -3, Narrative +3
+
+**Stage 2: The Investigation** -- Auto-resolve
+- Court -5, Heralds -3, Legitimacy -5, Narrative -5, Rival +3
+
+**Stage 3: The Verdict** -- Player choice
+- "Accept the findings": Court +10, Heralds +5, Legitimacy +5, Narrative +5, Rival -2
+- "Dismiss the findings": Court -10, Heralds -10, Narrative -8, Polarization +5, Rival +5
+
+### Colossus Pressure (3 stages, Trigger: Colossus patience < 20)
+
+**Stage 1: The Diplomatic Warning** -- Player choice
+- "Promise compliance": Colossus Alignment +8, Legitimacy -3
+- "Stand firm": Colossus Alignment -5, Narrative +5, Factories +5, Unions +5
+
+**Stage 2: Sanctions** -- Auto-resolve
+- Capital -25, Inflation +3, Colossus Alignment -5, Banks -5, Factories -5, Rival +3
+
+**Stage 3: The Colossus Ultimatum** -- Player choice
+- "Accept the terms": Colossus Alignment +20, Legitimacy -10, Narrative -10, Generals -10, Rival +5
+- "Refuse the ultimatum": Colossus Alignment -15, Narrative +10, Mobilization +10, Generals +10, Unions +5, Rival -3
 
 ---
 
@@ -704,4 +1121,4 @@ The endings collectively pose the question: "What does it mean to govern? And fo
 - Rival personality system with 4 backgrounds and context-aware action text
 - Congressional mechanics with seat shares and majority effects
 - Central bank independence as a hidden strategic lever
-- 40+ events including random, threshold-triggered, and crisis chain events
+- 53 events documented exhaustively (6 rival threshold, 1 resource threshold, 5 loyalty threshold, 26 random, 15 crisis chain stages)
