@@ -1431,7 +1431,7 @@ A "Hide Locked / Show Locked (N)" toggle button in the policy section header let
 
 ## End Turn Positioning and Glow
 
-**Desktop:** The End Turn button is positioned in the Choose Actions header row (right-aligned, next to the view mode and locked toggles). This keeps it visible without scrolling past all policies.
+**Desktop:** The End Turn button is positioned in the selection summary bar (below the Choose Actions header, next to "X/2 selected, Y capital left"). This keeps it visible without scrolling past all policies, while keeping the header row reserved for view toggles (Hide Locked, Overview/Detail) that align consistently across all collapsible sections.
 
 **Mobile:** The End Turn button remains sticky at the bottom of the Actions tab for thumb reach.
 
@@ -1553,7 +1553,7 @@ Non-oneShot events now have cooldown periods to prevent rapid repetition. Random
 ### v1.5 (February 2026)
 - Collapsible sections for desktop (Power Blocs, News Log, Choose Actions) with localStorage persistence
 - Locked policy toggle ("Hide Locked / Show Locked") with count indicator
-- End Turn button repositioned to header area on desktop (sticky bottom on mobile)
+- End Turn button repositioned to selection summary bar on desktop (sticky bottom on mobile)
 - End Turn inactivity glow after 120s (respects prefers-reduced-motion)
 - Briefing positive reinforcement: 6 new trigger categories, rival-retreating vignettes, positivity guarantee
 - Tone tagging on all briefing items (positive/negative/neutral)
