@@ -1,6 +1,12 @@
 import { useGameStore } from '../hooks/useGameStore';
 import Tooltip from './Tooltip';
 
+function getBarColor(value: number): string {
+  if (value >= 40) return 'bg-violet-300';
+  if (value >= 20) return 'bg-amber-400';
+  return 'bg-rose-400';
+}
+
 export default function ColossusPanel() {
   const colossus = useGameStore(s => s.colossus);
 
@@ -27,7 +33,7 @@ export default function ColossusPanel() {
           aria-labelledby="colossus-alignment-label"
         >
           <div
-            className="h-full rounded-full transition-all duration-500 bg-violet-400"
+            className={`h-full rounded-full transition-all duration-500 ${getBarColor(colossus.alignment)}`}
             style={{ width: `${colossus.alignment}%` }}
           />
         </div>
@@ -50,7 +56,7 @@ export default function ColossusPanel() {
           aria-labelledby="colossus-patience-label"
         >
           <div
-            className="h-full rounded-full transition-all duration-500 bg-violet-300"
+            className={`h-full rounded-full transition-all duration-500 ${getBarColor(colossus.patience)}`}
             style={{ width: `${colossus.patience}%` }}
           />
         </div>

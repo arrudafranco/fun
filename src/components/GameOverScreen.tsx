@@ -1,89 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import type { EndingId, Difficulty } from '../types/game';
+import type { Difficulty } from '../types/game';
 import { useGameStore } from '../hooks/useGameStore';
 import DifficultySelect from './DifficultySelect';
-
-type EndingTone = 'good' | 'neutral' | 'pyrrhic' | 'loss';
-
-interface EndingData {
-  title: string;
-  flavor: string;
-  tone: EndingTone;
-}
-
-const TONE_ACCENT: Record<EndingTone, string> = {
-  good: 'text-green-400',
-  neutral: 'text-cyan-400',
-  pyrrhic: 'text-amber-400',
-  loss: 'text-red-400',
-};
-
-const TONE_BORDER: Record<EndingTone, string> = {
-  good: 'border-green-500/40',
-  neutral: 'border-cyan-500/40',
-  pyrrhic: 'border-amber-500/40',
-  loss: 'border-red-500/40',
-};
-
-const TONE_BUTTON_BG: Record<EndingTone, string> = {
-  good: 'bg-green-700 hover:bg-green-600 focus:ring-green-500',
-  neutral: 'bg-cyan-700 hover:bg-cyan-600 focus:ring-cyan-500',
-  pyrrhic: 'bg-amber-700 hover:bg-amber-600 focus:ring-amber-500',
-  loss: 'bg-red-700 hover:bg-red-600 focus:ring-red-500',
-};
-
-const ENDINGS: Record<EndingId, EndingData> = {
-  new_compact: {
-    title: 'The New Compact',
-    flavor: "Labor, narrative, and hope... all aligned. Miranda found a third way.",
-    tone: 'good',
-  },
-  a_new_story: {
-    title: 'A New Story',
-    flavor: "You didn't just survive. You changed the narrative. Miranda writes its own chapter now.",
-    tone: 'good',
-  },
-  republic_endures: {
-    title: 'The Republic Endures',
-    flavor: "You survived. Miranda survived. Whether those are the same thing is a question for the historians.",
-    tone: 'neutral',
-  },
-  managers_victory: {
-    title: "The Manager's Victory",
-    flavor: "Efficient. Stable. Soulless. The trains run on time. Nobody sings anymore.",
-    tone: 'pyrrhic',
-  },
-  hollow_republic: {
-    title: 'The Hollow Republic',
-    flavor: "Miranda is polarized beyond repair. Two countries wearing one flag.",
-    tone: 'pyrrhic',
-  },
-  protectorate: {
-    title: 'The Protectorate',
-    flavor: "The Colossus didn't invade. It didn't need to. You signed everything over willingly.",
-    tone: 'pyrrhic',
-  },
-  shadow_republic: {
-    title: 'The Shadow Republic',
-    flavor: "The Underworld runs Miranda now. You're still president. That's the joke.",
-    tone: 'pyrrhic',
-  },
-  impeached: {
-    title: 'Impeached',
-    flavor: "Your legitimacy hit zero. Congress voted. The margin was... comfortable.",
-    tone: 'loss',
-  },
-  coup: {
-    title: 'The Coup',
-    flavor: "The Generals moved at dawn. Your last act as president was waking up surrounded.",
-    tone: 'loss',
-  },
-  rival_wins: {
-    title: 'The Rival Wins',
-    flavor: "They out-organized you, out-narrated you, out-lasted you. Miranda chose someone else.",
-    tone: 'loss',
-  },
-};
+import { ENDINGS, TONE_ACCENT, TONE_BORDER, TONE_BUTTON_BG } from '../data/endings';
 
 function statColor(value: number, greenAbove: number, yellowAbove: number): string {
   if (value >= greenAbove) return 'text-green-400';
@@ -99,6 +18,7 @@ function statColorInverse(value: number, greenBelow: number, yellowBelow: number
 
 export default function GameOverScreen() {
   const gameOver = useGameStore(s => s.gameOver);
+  const showDispatch = useGameStore(s => s.showDispatch);
   const ending = useGameStore(s => s.ending);
   const turn = useGameStore(s => s.turn);
   const maxTurns = useGameStore(s => s.maxTurns);
@@ -112,14 +32,14 @@ export default function GameOverScreen() {
   const [showDifficultySelect, setShowDifficultySelect] = useState(false);
 
   useEffect(() => {
-    if (gameOver) {
+    if (gameOver && !showDispatch) {
       setShowDifficultySelect(false);
       const id = requestAnimationFrame(() => buttonRef.current?.focus());
       return () => cancelAnimationFrame(id);
     }
-  }, [gameOver]);
+  }, [gameOver, showDispatch]);
 
-  if (!gameOver || !ending) return null;
+  if (!gameOver || !ending || showDispatch) return null;
 
   if (showDifficultySelect) {
     return (

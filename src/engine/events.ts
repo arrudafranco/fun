@@ -14,6 +14,9 @@ export function selectNewsEvent(state: GameState): GameEvent | null {
     // Skip fired one-shot events
     if (event.oneShot && state.firedEventIds.includes(event.id)) continue;
 
+    // Skip events on cooldown
+    if (state.eventCooldowns && state.eventCooldowns[event.id] && state.turn < state.eventCooldowns[event.id]) continue;
+
     // Check trigger
     const trigger = event.trigger;
     let triggered = false;

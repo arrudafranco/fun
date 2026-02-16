@@ -12,18 +12,25 @@ import RivalBar from './RivalBar';
 interface ResourceDef {
   key: keyof ResourceState;
   label: string;
-  dotColor: string;
+  getDotColor: (value: number) => string;
   max: number;
 }
 
 const RESOURCE_DEFS: ResourceDef[] = [
-  { key: 'legitimacy', label: 'Legit', dotColor: 'bg-sky-300', max: 100 },
-  { key: 'narrative', label: 'Narr', dotColor: 'bg-amber-300', max: 100 },
-  { key: 'capital', label: 'Cap', dotColor: 'bg-emerald-300', max: 999 },
-  { key: 'mobilization', label: 'Mob', dotColor: 'bg-rose-300', max: 100 },
-  { key: 'polarization', label: 'Polar', dotColor: 'bg-orange-300', max: 100 },
-  { key: 'inflation', label: 'Infl', dotColor: 'bg-yellow-200', max: 30 },
-  { key: 'dread', label: 'Dread', dotColor: 'bg-rose-400', max: 100 },
+  { key: 'legitimacy', label: 'Legit', max: 100,
+    getDotColor: v => v < 30 ? 'bg-rose-400' : v < 50 ? 'bg-amber-400' : 'bg-sky-300' },
+  { key: 'narrative', label: 'Narr', max: 100,
+    getDotColor: v => v < 30 ? 'bg-rose-400' : v < 50 ? 'bg-amber-400' : 'bg-amber-300' },
+  { key: 'capital', label: 'Cap', max: 999,
+    getDotColor: v => v < 100 ? 'bg-rose-400' : v < 200 ? 'bg-amber-400' : 'bg-emerald-300' },
+  { key: 'mobilization', label: 'Mob', max: 100,
+    getDotColor: v => v < 25 ? 'bg-rose-400' : v < 50 ? 'bg-amber-400' : 'bg-rose-300' },
+  { key: 'polarization', label: 'Polar', max: 100,
+    getDotColor: v => v < 30 ? 'bg-emerald-300' : v < 60 ? 'bg-amber-400' : 'bg-orange-300' },
+  { key: 'inflation', label: 'Infl', max: 30,
+    getDotColor: v => v < 8 ? 'bg-emerald-300' : v < 15 ? 'bg-yellow-200' : 'bg-rose-400' },
+  { key: 'dread', label: 'Dread', max: 100,
+    getDotColor: v => v < 20 ? 'bg-emerald-300' : v < 45 ? 'bg-amber-400' : 'bg-rose-400' },
 ];
 
 const NEGATIVE_RESOURCES = new Set<keyof ResourceState>(['polarization', 'inflation', 'dread']);
@@ -90,7 +97,7 @@ export default function SidebarOverview() {
           return (
             <Tooltip key={r.key} text={r.key === 'capital' ? `${value} (${totalIncome}/turn)` : `${value}/${r.max}`}>
               <div className="flex items-center gap-1.5 px-1 py-0.5">
-                <span className={`w-1.5 h-1.5 rounded-full ${r.dotColor} shrink-0`} aria-hidden="true" />
+                <span className={`w-1.5 h-1.5 rounded-full ${r.getDotColor(value)} shrink-0`} aria-hidden="true" />
                 <span className="text-[11px] text-slate-400 flex-1">{r.label}</span>
                 <span className="text-[11px] text-slate-200 font-medium tabular-nums w-8 text-right">
                   {value}

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { BlocId } from '../types/blocs';
 import BlocCard from './BlocCard';
 import BlocOverviewTable from './BlocOverviewTable';
+import CollapsibleSection from './CollapsibleSection';
 
 interface BlocGroup {
   label: string;
@@ -62,53 +63,51 @@ export default function BlocGrid({ compact }: BlocGridProps) {
     );
   }
 
-  return (
-    <div className="p-4" data-tutorial="blocs">
-      {/* View toggle */}
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider font-pixel">
-          Power Blocs
-        </h2>
-        <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-0.5" role="radiogroup" aria-label="Bloc view mode">
-          <button
-            role="radio"
-            aria-checked={viewMode === 'overview'}
-            onClick={() => setViewMode('overview')}
-            className={`px-2.5 py-1 text-[10px] font-medium rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 ${
-              viewMode === 'overview' ? 'bg-slate-700 text-cyan-300' : 'text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            Overview
-          </button>
-          <button
-            role="radio"
-            aria-checked={viewMode === 'detail'}
-            onClick={() => setViewMode('detail')}
-            className={`px-2.5 py-1 text-[10px] font-medium rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 ${
-              viewMode === 'detail' ? 'bg-slate-700 text-cyan-300' : 'text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            Detail
-          </button>
-        </div>
-      </div>
-
-      {viewMode === 'overview' ? (
-        <BlocOverviewTable groups={BLOC_GROUPS} />
-      ) : (
-        BLOC_GROUPS.map(group => (
-          <div key={group.label} className="mb-4">
-            <h3 className={`text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2 pl-2 border-l-2 ${group.color}`}>
-              {group.label}
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {group.blocs.map(id => (
-                <BlocCard key={id} blocId={id} />
-              ))}
-            </div>
-          </div>
-        ))
-      )}
+  const viewToggle = (
+    <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-0.5" role="radiogroup" aria-label="Bloc view mode" data-tutorial="bloc-view-toggle">
+      <button
+        role="radio"
+        aria-checked={viewMode === 'overview'}
+        onClick={() => setViewMode('overview')}
+        className={`px-2.5 py-1 text-[10px] font-medium rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 ${
+          viewMode === 'overview' ? 'bg-slate-700 text-cyan-300' : 'text-slate-500 hover:text-slate-300'
+        }`}
+      >
+        Overview
+      </button>
+      <button
+        role="radio"
+        aria-checked={viewMode === 'detail'}
+        onClick={() => setViewMode('detail')}
+        className={`px-2.5 py-1 text-[10px] font-medium rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 ${
+          viewMode === 'detail' ? 'bg-slate-700 text-cyan-300' : 'text-slate-500 hover:text-slate-300'
+        }`}
+      >
+        Detail
+      </button>
     </div>
+  );
+
+  return (
+    <CollapsibleSection id="blocs" title="Power Blocs" tutorialAttr="blocs" headerRight={viewToggle}>
+      <div className="px-4 pb-4">
+        {viewMode === 'overview' ? (
+          <BlocOverviewTable groups={BLOC_GROUPS} />
+        ) : (
+          BLOC_GROUPS.map(group => (
+            <div key={group.label} className="mb-4">
+              <h3 className={`text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2 pl-2 border-l-2 ${group.color}`}>
+                {group.label}
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {group.blocs.map(id => (
+                  <BlocCard key={id} blocId={id} />
+                ))}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </CollapsibleSection>
   );
 }

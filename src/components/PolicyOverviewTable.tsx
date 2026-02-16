@@ -33,7 +33,11 @@ export default function PolicyOverviewTable({
         <span role="columnheader" className="text-[10px] text-slate-500 uppercase tracking-wider flex-1">Policy</span>
         <span role="columnheader" className="text-[10px] text-slate-500 uppercase tracking-wider w-8 text-right">Cost</span>
         <span role="columnheader" className="text-[10px] text-slate-500 uppercase tracking-wider hidden lg:block w-40">Effects</span>
-        <span role="columnheader" className="w-6" />
+        <span role="columnheader" className="w-6 flex items-center justify-center">
+          <svg aria-hidden="true" className="w-3.5 h-3.5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <rect x="3" y="3" width="18" height="18" rx="3" />
+          </svg>
+        </span>
       </div>
       {policies.map(policy => {
         const isLocked = !unlockedPolicyIds.includes(policy.id);

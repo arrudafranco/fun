@@ -1,3 +1,4 @@
+import { useRef, useState, useEffect } from 'react';
 import type { BlocId } from '../types/blocs';
 import { ALL_BLOC_IDS } from '../types/blocs';
 import { BLOC_DEFINITIONS } from '../data/blocs';
@@ -32,6 +33,18 @@ export default function CongressPanel() {
   const blocs = useGameStore(s => s.blocs);
   const isFriendly = useGameStore(s => s.congress.friendlyMajority);
 
+  const [pulsing, setPulsing] = useState(false);
+  const prevFriendlyRef = useRef(isFriendly);
+
+  useEffect(() => {
+    if (isFriendly !== prevFriendlyRef.current) {
+      setPulsing(true);
+      const timer = setTimeout(() => setPulsing(false), 1000);
+      prevFriendlyRef.current = isFriendly;
+      return () => clearTimeout(timer);
+    }
+  }, [isFriendly]);
+
   const hasData = ALL_BLOC_IDS.some(id => (seatShares[id] ?? 0) > 0);
   if (!hasData) return null;
 
@@ -50,7 +63,7 @@ export default function CongressPanel() {
     .sort((a, b) => (seatShares[b] ?? 0) - (seatShares[a] ?? 0));
 
   return (
-    <div>
+    <div className={pulsing ? 'animate-loyalty-pulse rounded-xl' : ''}>
       <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 font-pixel">
         Congress
       </h3>

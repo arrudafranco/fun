@@ -1,6 +1,6 @@
 # Miranda Republic -- Game Mechanics Documentation
 
-*Last updated: v1.3 (February 2026)*
+*Last updated: v1.6 (February 2026)*
 
 This document describes all game mechanics, systems, and design rationale in detail. It is intended as a reference for development, balance tuning, and onboarding.
 
@@ -29,7 +29,15 @@ This document describes all game mechanics, systems, and design rationale in det
 19. [Day One Briefing](#day-one-briefing)
 20. [Responsive Design](#responsive-design)
 21. [Design Rationale](#design-rationale)
-22. [Changelog](#changelog)
+22. [Collapsible Sections](#collapsible-sections)
+23. [Locked Policy Toggle](#locked-policy-toggle)
+24. [End Turn Positioning and Glow](#end-turn-positioning-and-glow)
+25. [Briefing Positive Reinforcement](#briefing-positive-reinforcement)
+26. [Milestone System](#milestone-system)
+27. [Event Outcome Cards](#event-outcome-cards)
+28. [UI Visual Reinforcement](#ui-visual-reinforcement)
+29. [Event Cooldowns](#event-cooldowns)
+30. [Changelog](#changelog)
 
 ---
 
@@ -1045,6 +1053,46 @@ Crisis chains are multi-stage escalating emergencies that unfold over consecutiv
 
 ---
 
+## Presidential Dispatches (Ending Epilogues)
+
+When the game ends, players see a **Presidential Dispatch** before the stats screen. This is a multi-paragraph narrative epilogue framed as the president's final communication from office. For good endings, it reads as a legacy statement. For losses, it becomes the last words from the desk before the end.
+
+### Two-Stage Game Over Flow
+
+1. Game ends → **Dispatch card** appears (labeled "Presidential Dispatch", ending title, narrative paragraphs, "Continue to Report" button)
+2. Player clicks Continue → existing **GameOverScreen** with stats + Play Again
+
+### Narrative Voice
+
+Written as the president's internal monologue or final address. First-person "I" voice or close-second ("You stand at the window..."). Losses are personal, wins have an edge. No em-dashes or colons in any text.
+
+### Template Variables
+
+Dispatches support `{rivalName}`, `{rivalTitle}`, `{turn}`, `{milestonesCount}`, `{policiesCount}` for personalization based on the player's specific game.
+
+### Conditional Paragraphs
+
+Some endings have variant paragraphs that only appear based on game state. For example, `republic_endures` shows different text depending on narrative level, polarization, and milestone count. The `impeached` ending varies based on how early in the term it happened.
+
+### Ending Tones and Dispatch Coverage
+
+| Ending | Tone | Dispatch Focus |
+|--------|------|----------------|
+| new_compact | good | Workers and intellectuals find common ground. Constitutional moment. Rival concedes. |
+| a_new_story | good | Narrative shifted. Media/artists rewrote Miranda's story. New generation. |
+| republic_endures | neutral | Survived, not triumphed. Desk passes to next president. Conditional variants for narrative/polarization/milestones. |
+| managers_victory | pyrrhic | Efficient technocracy. Labor crushed. Economy hums. Culture is hollow. |
+| hollow_republic | pyrrhic | Two Mirandas, one flag. Democracy as performance. Center didn't hold. |
+| protectorate | pyrrhic | Sovereignty on paper. Advisory appointments, security cooperation. |
+| shadow_republic | pyrrhic | Syndicate doesn't govern openly. Every decision routes through their network. |
+| impeached | loss | Congress voted. Variants for early/mid/late term. |
+| coup | loss | Dawn. Boots on marble. Radio silence. Temporary measures. |
+| rival_wins | loss | Victory speech on every channel. Policies reversed within a week. Uses {rivalName}. |
+
+**Design rationale.** The one-liner endings felt abrupt after 48 turns of investment. Players deserve a narrative payoff that reflects their specific journey. The presidential voice makes losses personal and wins satisfying. Conditional paragraphs ensure replay variety even for the same ending. The two-stage flow preserves the existing stats screen while adding emotional weight.
+
+---
+
 ## Difficulty Settings
 
 Three difficulty levels affect starting conditions and ongoing mechanics.
@@ -1344,7 +1392,7 @@ The tutorial overlay (accessible via the "?" button) highlights relevant UI elem
 
 On mobile, the tutorial auto-switches bottom nav tabs to show the relevant section (e.g., switching to the Status tab when explaining resources).
 
-Steps without spotlight targets (Welcome, Backroom Deals, Turn Reports, View Modes) fall back to a centered modal with full dark backdrop.
+Steps without a spotlight target (Welcome) fall back to a centered modal with full dark backdrop. The tutorial now has 13 steps including Locked Policies and Collapsing Sections. A scroll listener (capture phase) keeps the spotlight position in sync when the user scrolls during the tutorial.
 
 ### Bloc Grouping
 
@@ -1359,7 +1407,165 @@ Labor is intentionally separate from Culture. Unions operate on fundamentally di
 
 ---
 
+## Collapsible Sections
+
+On desktop, the three main content sections (Power Blocs, News Log, Choose Actions) are wrapped in a `CollapsibleSection` component. Each section has a clickable header with a chevron that rotates on collapse. Collapse state is persisted to `localStorage` (`miranda-section-{id}`).
+
+**Accessibility:** `aria-expanded` on the toggle button, `aria-controls` linking to the content region, sr-only expand/collapse text. The chevron rotation uses `transition-transform` which respects `prefers-reduced-motion`.
+
+**Mobile:** Collapsible sections are not used on mobile, which already separates content into bottom nav tabs.
+
+**Design rationale:** With 14 blocs, a news log, and up to 46 policies, the desktop layout required excessive scrolling. Collapsible sections let players hide sections they don't need, keeping the End Turn button visible. The default is all-expanded so new players see everything.
+
+---
+
+## Locked Policy Toggle
+
+A "Hide Locked / Show Locked (N)" toggle button in the policy section header lets players filter out locked policies. State is persisted to `localStorage` (`miranda-show-locked`). The count of hidden policies is shown in the button text.
+
+**Accessibility:** `aria-pressed` on the toggle button, sr-only count indicator for screen readers.
+
+**Design rationale:** 28 locked policies at game start create visual clutter. Hiding them focuses attention on actionable options while preserving the ability to see what's coming (for players who want to plan ahead).
+
+---
+
+## End Turn Positioning and Glow
+
+**Desktop:** The End Turn button is positioned in the Choose Actions header row (right-aligned, next to the view mode and locked toggles). This keeps it visible without scrolling past all policies.
+
+**Mobile:** The End Turn button remains sticky at the bottom of the Actions tab for thumb reach.
+
+**Inactivity glow:** After 120 seconds of no mouse/keyboard/touch activity, the End Turn button pulses with a cyan glow (`gentle-glow` keyframe animation). The glow resets on any interaction. Under `prefers-reduced-motion`, the glow is static (no animation).
+
+**Design rationale:** Playtesting showed players sometimes forgot to end their turn or couldn't find the button after scrolling through policies. The glow provides a gentle nudge without being intrusive.
+
+---
+
+## Briefing Positive Reinforcement
+
+The briefing system (`src/engine/briefing.ts`) was updated to address structural suppression of positive feedback. Previously, crises and rival actions (priority 80-100) would always crowd out positive vignettes (priority 60-70) since only 3 items are shown per turn.
+
+### New Positive Trigger Categories
+
+| Trigger | Condition | Priority | Examples |
+|---------|-----------|----------|----------|
+| Capital healthy | capital > 50 | 65 | Budget surplus, no apologies needed |
+| Citizens safe | dread < 20 | 62 | Night patrols normalized, no fear |
+| Unity | polarization < 30 | 62 | Joint editorials, handshakes after debates |
+| Popular support | mobilization > 70 | 65 | Rally overflow, volunteer surge |
+| Strong mandate | legitimacy > 75 | 68 | Historic approval, foreign admiration |
+| Rival retreating | rival.powerDelta <= -10 | 72 | Rally rescheduled, donors switching sides |
+
+### Positivity Guarantee
+
+After the priority sort and top-3 selection, a "positivity guarantee" rule fires: if all 3 selected items are negative/neutral AND at least one positive vignette was generated (but cut), the lowest-priority negative item is swapped for the highest-priority positive one. This ensures players who are doing well see at least one piece of good news per turn.
+
+### Tone Tagging
+
+Every `BriefingItem` now carries a `tone` field (`'positive' | 'negative' | 'neutral'`). This enables the positivity guarantee and could support future UI enhancements (e.g., color-coding briefing items).
+
+**Design rationale:** Intermittent positive reinforcement is essential for player retention, especially for new players learning when they're doing things right. The positivity guarantee ensures that good governance is recognized without eliminating the game's dark tone. Positive vignettes only fire when conditions genuinely merit them.
+
+---
+
+## Milestone System
+
+Milestones are aspirational goals that give players something to work toward beyond survival. 9 milestones exist (5 visible, 4 hidden). Each has conditions tracked via a checklist UI.
+
+**Visible milestones.** The Miranda Model (governance), Full Employment (economy), The Peacemaker (social), Economic Tiger (economy), United Front (governance).
+
+**Hidden milestones.** The Puppet Master (3+ delayed effects), Against All Odds (survive to turn 24 on crisis), The Reformer (30+ policies enacted), Colossus Whisperer (high patience, low alignment).
+
+**Rewards.** Each milestone grants one of three reward types:
+- `policy_unlock` ... unlocks a milestone-exclusive policy (International Summit, Universal Basic Income, Sovereign Investment Fund, Constitutional Convention, Trade Independence)
+- `mechanical` ... direct resource bonuses (e.g., +10 legitimacy)
+- `narrative` ... smaller bonuses with narrative flavor text
+
+**Design rationale.** Milestones address the "no aspirational goals" problem. Players previously had no reason to optimize beyond survival. Milestone-exclusive policies create a "carrot" that encourages specific playstyles (peacemaker, economic powerhouse, broad coalition). Hidden milestones reward emergent play patterns without telegraphing them. The condition checklist provides transparent progress tracking.
+
+**Engine.** `src/engine/milestones.ts` evaluates 9 condition types (resource_above, resource_below, bloc_loyalty_above, all_blocs_above, rival_power_below, turn_reached, no_active_crises, congress_majority, custom). `checkMilestones()` runs after each turn's win/loss check. Achieved milestones are stored in `state.achievedMilestoneIds`. A `MilestoneRewardCard` modal displays narrative reward text.
+
+**UI.** Desktop: CollapsibleSection in main content area between PolicyPicker and NewsLog. Mobile: dedicated "Goals" tab (5th tab in bottom nav). Achieved milestones shown with amber/gold styling at top. Hidden milestones show count ("N hidden milestones remain...").
+
+---
+
+## Event Outcome Cards
+
+After choosing an event option, players now see an outcome card with narrative text describing the consequences of their choice. This addresses the "silent resolution" problem where event choices had no narrative payoff.
+
+**Authored outcomes.** ~12 high-impact event choices have handcrafted outcome text (both options for currency crisis, colossus trade offer, banking crisis, colossus ultimatum, etc.).
+
+**Generic outcomes.** Remaining choices draw from a pool of 8 generic outcome texts that maintain the game's wry political tone.
+
+**Engine flow.** `resolveCurrentEvent` sets `state.pendingOutcome` with choice label + text, stays in 'news' phase. EventModal shows the outcome card (amber accent line). `dismissOutcome` clears it and advances to 'action' phase. Auto-resolving events (no choices) skip the outcome card.
+
+---
+
+## UI Visual Reinforcement
+
+Six UI changes that communicate game state through visual cues.
+
+1. **News log tone tinting.** Headlines colored by tone: emerald (positive), rose (negative), slate (neutral).
+2. **Colossus bar color shift.** Alignment and patience bars shift from violet (healthy) to amber (warning) to rose (critical) at thresholds 40/20.
+3. **Resource bar dynamic coloring.** Each resource bar changes color based on its value. Positive resources (legitimacy, narrative, capital, mobilization) shift rose (danger) to amber (warning) to identity color (healthy). Negative resources (polarization, inflation, dread) shift identity (healthy) to amber (warning) to rose (danger). Specific thresholds per resource.
+4. **Bloc loyalty tier pulse.** When a bloc's loyalty crosses a tier boundary (30/60), its card briefly pulses with a cyan border glow. 1-second animation, disabled under prefers-reduced-motion.
+5. **Congress majority change pulse.** Same pulse animation when congressional majority status changes.
+6. **Rival dynamic glow.** Rival panel border opacity and bar glow intensity scale with rival power (faint at low power, intense at high power).
+
+**Design rationale.** Players reported not noticing when things were going well vs. badly. These visual changes provide ambient feedback without requiring text reading. The convergence toward rose for "bad" states creates unconscious alarm, while identity colors for "good" states maintain visual distinctiveness.
+
+---
+
+## Event Cooldowns
+
+Non-oneShot events now have cooldown periods to prevent rapid repetition. Random-triggered events have an 8-turn cooldown. Loyalty-threshold events have a 6-turn cooldown. Cooldowns stored in `state.eventCooldowns` (eventId to turn when cooldown expires).
+
+---
+
 ## Changelog
+
+### v1.7 (February 2026)
+- Presidential Dispatches: multi-paragraph narrative epilogues for all 10 endings
+- Two-stage game over flow (Dispatch → Stats Report)
+- Template variable substitution ({rivalName}, {rivalTitle}, {turn}, {milestonesCount}, {policiesCount})
+- Conditional dispatch paragraphs (republic_endures, impeached) varying by game state
+- Ending data consolidated into src/data/endings.ts (shared by GameOverScreen and PresidentialDispatch)
+- New component: PresidentialDispatch
+- 130 tests across 7 suites (15 new dispatch tests)
+
+### v1.6 (February 2026)
+- Milestone system: 9 milestones (5 visible, 4 hidden) with condition checklists and reward cards
+- 5 milestone-exclusive policies (International Summit, Universal Basic Income, Sovereign Investment Fund, Constitutional Convention, Trade Independence)
+- Event outcome cards: narrative payoff after event choices (12 authored + 8 generic outcome texts)
+- Event cooldown system preventing rapid repetition (8-turn random, 6-turn loyalty threshold)
+- Briefing positive trigger deduplication (seenPositiveTriggers prevents re-firing)
+- UI visual reinforcement: dynamic resource bar coloring, news log tone tinting, Colossus bar color shifts, bloc loyalty pulse, congress majority pulse, rival dynamic glow
+- Desktop layout reorder: BlocGrid -> PolicyPicker -> MilestonesPanel -> NewsLog
+- Mobile "Goals" tab (5th tab) for milestone tracking
+- MilestoneRewardCard modal with amber/gold styling
+- MilestonesPanel component (CollapsibleSection on desktop, bare on mobile)
+- Tutorial expanded to 14 steps (added Milestones step with spotlight)
+- 115 tests across 6 suites (20 new milestone tests, updated fuzz invariants)
+- New engine modules: milestones.ts
+- New components: MilestonesPanel, MilestoneRewardCard
+- New data files: milestones.ts, outcomeTexts.ts
+
+### v1.5 (February 2026)
+- Collapsible sections for desktop (Power Blocs, News Log, Choose Actions) with localStorage persistence
+- Locked policy toggle ("Hide Locked / Show Locked") with count indicator
+- End Turn button repositioned to header area on desktop (sticky bottom on mobile)
+- End Turn inactivity glow after 120s (respects prefers-reduced-motion)
+- Briefing positive reinforcement: 6 new trigger categories, rival-retreating vignettes, positivity guarantee
+- Tone tagging on all briefing items (positive/negative/neutral)
+- EventModal suppressed during tutorial and inauguration
+- Tutorial scroll fix (capture-phase scroll listener for spotlight repositioning)
+- Tutorial expanded to 13 steps (added Locked Policies and Collapsing Sections)
+- Spotlights added to View Modes, Backroom Deals, and Turn Reports tutorial steps
+- "P" prefix removed from bloc power column in overview table
+- Checkbox column header icon in PolicyOverviewTable
+- New component: CollapsibleSection
+- New hook: useInactivityGlow
+- 95 tests across 5 suites (10 new briefing reinforcement tests)
 
 ### v1.4 (February 2026)
 - Desktop Overview/Detail toggles for Blocs (BlocOverviewTable), Policies (PolicyOverviewTable), and Sidebar (SidebarOverview)

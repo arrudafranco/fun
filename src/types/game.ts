@@ -61,6 +61,7 @@ export interface ActiveCrisis {
 export interface NewsLogEntry {
   turn: number;
   headline: string;
+  tone?: 'positive' | 'negative' | 'neutral';
 }
 
 export type TurnPhase =
@@ -86,9 +87,12 @@ export type EndingId =
 
 export type BriefingItemType = 'rival' | 'crisis' | 'discovery' | 'bloc_shift' | 'resource' | 'unlock' | 'color';
 
+export type BriefingTone = 'positive' | 'negative' | 'neutral';
+
 export interface BriefingItem {
   text: string;
   type: BriefingItemType;
+  tone?: BriefingTone;
 }
 
 export interface CongressState {
@@ -153,7 +157,22 @@ export interface GameState {
   // Previous turn bloc loyalty (for trend arrows)
   prevBlocLoyalty?: Record<BlocId, number>;
 
+  // Briefing dedup
+  seenPositiveTriggers: string[];
+
+  // Event cooldowns
+  eventCooldowns: Record<string, number>;
+
+  // Event outcome cards
+  pendingOutcome: { choiceLabel: string; text: string } | null;
+
+  // Milestones
+  achievedMilestoneIds: string[];
+  pendingMilestoneReward: { name: string; rewardText: string } | null;
+  policiesEnactedCount: number;
+
   // Game end
   ending: EndingId | null;
   gameOver: boolean;
+  showDispatch: boolean;
 }

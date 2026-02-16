@@ -10,8 +10,11 @@ import PolicyCard from './PolicyCard';
 import PolicyOverviewTable from './PolicyOverviewTable';
 import PolicyDetailSheet from './PolicyDetailSheet';
 import BlocTargetModal from './BlocTargetModal';
+import CollapsibleSection from './CollapsibleSection';
+import { useInactivityGlow } from '../hooks/useInactivityGlow';
 
 const POLICY_VIEW_KEY = 'miranda-policy-view';
+const SHOW_LOCKED_KEY = 'miranda-show-locked';
 type PolicyViewMode = 'detail' | 'overview';
 
 const CATEGORY_TAB_COLORS: Record<string, string> = {
@@ -64,6 +67,7 @@ export default function PolicyPicker() {
   const unlockedPolicyIds = useGameStore(s => s.unlockedPolicyIds);
   const newlyUnlockedPolicyIds = useGameStore(s => s.newlyUnlockedPolicyIds);
   const { isMobile } = useBreakpoint();
+  const glowing = useInactivityGlow(120_000);
 
   const [selected, setSelected] = useState<ActionChoice[]>([]);
   const [pendingBlocPolicy, setPendingBlocPolicy] = useState<string | null>(null);
@@ -77,6 +81,14 @@ export default function PolicyPicker() {
       return 'detail';
     }
   });
+  const [showLocked, setShowLocked] = useState(() => {
+    try {
+      const stored = localStorage.getItem(SHOW_LOCKED_KEY);
+      return stored !== null ? stored === '1' : true;
+    } catch {
+      return true;
+    }
+  });
 
   useEffect(() => {
     try {
@@ -85,6 +97,14 @@ export default function PolicyPicker() {
       // ignore
     }
   }, [policyViewMode]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(SHOW_LOCKED_KEY, showLocked ? '1' : '0');
+    } catch {
+      // ignore
+    }
+  }, [showLocked]);
 
   // Calculate total committed capital
   const committedCapital = selected.reduce((sum, sel) => {
@@ -154,6 +174,7 @@ export default function PolicyPicker() {
     categoryCounts[cat] = { unlocked: unlocked.length, total: inCat.length };
   }
   const allUnlocked = POLICIES.filter(p => unlockedPolicyIds.includes(p.id)).length;
+  const lockedCount = POLICIES.length - allUnlocked;
 
   // Filter and sort policies
   const filteredPolicies = activeTab === 'all'
@@ -191,6 +212,11 @@ export default function PolicyPicker() {
     return aCost - bCost;
   });
 
+  // Apply locked filter
+  const displayPolicies = showLocked
+    ? sortedPolicies
+    : sortedPolicies.filter(p => unlockedPolicyIds.includes(p.id));
+
   // Tab keyboard navigation
   function handleTabKeyDown(e: React.KeyboardEvent, tabs: CategoryFilter[]) {
     const currentIdx = tabs.indexOf(activeTab);
@@ -225,6 +251,9 @@ export default function PolicyPicker() {
   const tabPanelId = 'policy-tabpanel';
   const remainingCapital = resources.capital - committedCapital;
 
+  const endTurnButtonText = `End Turn${selected.length > 0 ? ` (${selected.length})` : ''}`;
+  const endTurnButtonClass = `px-4 py-2.5 rounded-lg bg-cyan-700 hover:bg-cyan-600 text-white font-semibold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 ${glowing ? 'end-turn-glow' : ''}`;
+
   // Selection summary bar (shared between mobile and desktop)
   const selectionSummary = (
     <div className="flex items-center gap-2 flex-wrap">
@@ -253,47 +282,84 @@ export default function PolicyPicker() {
     </div>
   );
 
-  return (
-    <section aria-label="Policy selection">
-      <div className="px-4 pt-4 pb-2" data-tutorial="policies">
-        <div className="flex items-center justify-between mb-1">
+  // Locked toggle button
+  const lockedToggle = (
+    <button
+      aria-pressed={!showLocked}
+      data-tutorial="locked-toggle"
+      onClick={() => setShowLocked(v => !v)}
+      className={`px-2.5 py-1 text-[10px] font-medium rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 ${
+        showLocked ? 'bg-slate-800 text-slate-400 hover:text-slate-200' : 'bg-slate-700 text-cyan-300'
+      }`}
+    >
+      {showLocked ? 'Hide Locked' : `Show Locked (${lockedCount})`}
+      <span className="sr-only">
+        {showLocked ? `, ${lockedCount} locked policies visible` : `, ${lockedCount} locked policies hidden`}
+      </span>
+    </button>
+  );
+
+  // View mode toggle (desktop only)
+  const viewToggle = !isMobile ? (
+    <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-0.5" role="radiogroup" aria-label="Policy view mode">
+      <button
+        role="radio"
+        aria-checked={policyViewMode === 'overview'}
+        onClick={() => setPolicyViewMode('overview')}
+        className={`px-2.5 py-1 text-[10px] font-medium rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 ${
+          policyViewMode === 'overview' ? 'bg-slate-700 text-cyan-300' : 'text-slate-500 hover:text-slate-300'
+        }`}
+      >
+        Overview
+      </button>
+      <button
+        role="radio"
+        aria-checked={policyViewMode === 'detail'}
+        onClick={() => setPolicyViewMode('detail')}
+        className={`px-2.5 py-1 text-[10px] font-medium rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 ${
+          policyViewMode === 'detail' ? 'bg-slate-700 text-cyan-300' : 'text-slate-500 hover:text-slate-300'
+        }`}
+      >
+        Detail
+      </button>
+    </div>
+  ) : null;
+
+  // Desktop: End Turn in header area; header right includes toggle, locked toggle, and End Turn
+  const desktopHeaderRight = !isMobile ? (
+    <>
+      {lockedToggle}
+      {viewToggle}
+      <button onClick={handleEndTurn} className={endTurnButtonClass}>
+        {endTurnButtonText}
+      </button>
+    </>
+  ) : null;
+
+  // Policy content (tabs + grid + mobile controls)
+  const policyContent = (
+    <>
+      {/* Mobile header controls */}
+      {isMobile && (
+        <div className="px-3 pt-3 pb-1 flex items-center justify-between" data-tutorial="policies">
           <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider font-pixel">
             Choose Actions ({selected.length}/2)
           </h3>
-          {!isMobile && (
-            <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-0.5" role="radiogroup" aria-label="Policy view mode">
-              <button
-                role="radio"
-                aria-checked={policyViewMode === 'overview'}
-                onClick={() => setPolicyViewMode('overview')}
-                className={`px-2.5 py-1 text-[10px] font-medium rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 ${
-                  policyViewMode === 'overview' ? 'bg-slate-700 text-cyan-300' : 'text-slate-500 hover:text-slate-300'
-                }`}
-              >
-                Overview
-              </button>
-              <button
-                role="radio"
-                aria-checked={policyViewMode === 'detail'}
-                onClick={() => setPolicyViewMode('detail')}
-                className={`px-2.5 py-1 text-[10px] font-medium rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 ${
-                  policyViewMode === 'detail' ? 'bg-slate-700 text-cyan-300' : 'text-slate-500 hover:text-slate-300'
-                }`}
-              >
-                Detail
-              </button>
-            </div>
-          )}
+          {lockedToggle}
         </div>
-        {!isMobile && (
-          <p className="text-xs text-slate-500 mb-3">
+      )}
+
+      {/* Desktop subtitle */}
+      {!isMobile && (
+        <div className="px-4 pb-1" data-tutorial="policies">
+          <p className="text-xs text-slate-500">
             Select up to 2 policies, then end your turn. You can also skip by ending with no selections.
           </p>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Selection summary bar */}
-      <div className="px-4 pb-2">
+      <div className="px-4 pb-2 pt-1">
         {selectionSummary}
       </div>
 
@@ -350,7 +416,7 @@ export default function PolicyPicker() {
       >
         {!isMobile && policyViewMode === 'overview' ? (
           <PolicyOverviewTable
-            policies={sortedPolicies}
+            policies={displayPolicies}
             selected={selected}
             unlockedPolicyIds={unlockedPolicyIds}
             newlyUnlockedPolicyIds={newlyUnlockedPolicyIds}
@@ -361,7 +427,7 @@ export default function PolicyPicker() {
             onDetail={setDetailPolicy}
           />
         ) : (
-          sortedPolicies.map(policy => {
+          displayPolicies.map(policy => {
             const isLocked = !unlockedPolicyIds.includes(policy.id);
             if (isLocked) {
               return (
@@ -402,15 +468,36 @@ export default function PolicyPicker() {
         )}
       </div>
 
-      {/* End Turn button */}
-      <div className={`px-4 pb-4 ${isMobile ? 'sticky bottom-0 bg-slate-950/95 backdrop-blur-sm pt-2 border-t border-slate-700/30' : ''}`}>
-        <button
-          onClick={handleEndTurn}
-          className="w-full px-4 py-3 rounded-lg bg-cyan-700 hover:bg-cyan-600 text-white font-semibold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500"
-        >
-          End Turn{selected.length > 0 ? ` (${selected.length} action${selected.length > 1 ? 's' : ''})` : ''}
-        </button>
-      </div>
+      {/* Mobile End Turn button (sticky bottom) */}
+      {isMobile && (
+        <div className="sticky bottom-0 bg-slate-950/95 backdrop-blur-sm pt-2 pb-4 px-4 border-t border-slate-700/30">
+          <button onClick={handleEndTurn} className={`w-full ${endTurnButtonClass}`}>
+            {endTurnButtonText}
+          </button>
+        </div>
+      )}
+    </>
+  );
+
+  // Wrap in CollapsibleSection on desktop, plain section on mobile
+  const wrappedContent = isMobile ? (
+    <section aria-label="Policy selection">
+      {policyContent}
+    </section>
+  ) : (
+    <CollapsibleSection
+      id="policies"
+      title={`Choose Actions (${selected.length}/2)`}
+      tutorialAttr="policies"
+      headerRight={desktopHeaderRight}
+    >
+      {policyContent}
+    </CollapsibleSection>
+  );
+
+  return (
+    <>
+      {wrappedContent}
 
       {/* Policy detail sheet */}
       {detailPolicy && (() => {
@@ -448,6 +535,6 @@ export default function PolicyPicker() {
           />
         );
       })()}
-    </section>
+    </>
   );
 }

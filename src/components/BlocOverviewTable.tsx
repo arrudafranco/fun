@@ -222,7 +222,7 @@ export default function BlocOverviewTable({ groups }: BlocOverviewTableProps) {
                       {bloc.loyalty}
                     </span>
                     <span role="cell" className="text-xs text-slate-500 tabular-nums w-8 text-right">
-                      P{bloc.power}
+                      {bloc.power}
                     </span>
                     <span role="cell" className="w-4 text-center">
                       {trend && (

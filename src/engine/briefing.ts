@@ -1,4 +1,4 @@
-import type { GameState, BriefingItem } from '../types/game';
+import type { GameState, BriefingItem, BriefingTone } from '../types/game';
 import type { BlocId } from '../types/blocs';
 import { BLOC_DEFINITIONS } from '../data/blocs';
 import { randomChoice } from '../utils/helpers';
@@ -306,22 +306,61 @@ const COLOR_VIGNETTES = [
   'A memo circulated asking all staff to stop feeding the palace cat. The cat does not appear to be losing weight.',
 ];
 
+// ── Positive reinforcement pools ────────────────────────────
+
+const CAPITAL_ABOVE_50 = [
+  'The Finance Minister reported a budget surplus. The Cabinet applauded. It has been years.',
+  'Your treasurer\'s quarterly report required no apologies. A first.',
+];
+
+const DREAD_BELOW_20 = [
+  'Night patrols returned to normal schedules. The neighborhood watch disbanded, saying there was no need.',
+  'A stranger asked a police officer for directions without flinching. Progress.',
+];
+
+const POLARIZATION_BELOW_30 = [
+  'Two rival newspapers published a joint editorial. For the first time in years, they agreed on something.',
+  'A debate between opposition and government supporters ended with handshakes. A small thing. It matters.',
+];
+
+const MOBILIZATION_ABOVE_70 = [
+  'Rally attendance exceeded expectations. The organizers ordered more chairs.',
+  'Your volunteer coordinators requested training for new recruits. "We can\'t keep up," they said.',
+];
+
+const LEGITIMACY_ABOVE_75 = [
+  'An opinion poll placed your approval rating at a historic high. The opposition declined to comment.',
+  'Foreign correspondents are writing about the Miranda Model. The tone is cautiously admiring.',
+];
+
+const RIVAL_RETREATING = [
+  'The Rival\'s rally was quietly rescheduled. Their office cited "logistics."',
+  'A major donor switched sides. The opposition campaign manager looked ashen.',
+  'Three opposition caucus members voted with the government. The Rival\'s grip is slipping.',
+];
+
 /**
  * Generate narrative briefing items based on what happened this turn.
  * Compares current state to previousResources to detect notable changes.
  * Returns at most 3 items, prioritized by dramatic impact.
+ * Guarantees at least one positive item when conditions merit it.
+ * Also returns keys of newly fired positive triggers for dedup.
  */
-export function generateBriefingItems(state: GameState): BriefingItem[] {
+export function generateBriefingItems(state: GameState): { items: BriefingItem[]; newPositiveTriggers: string[] } {
   const prev = state.previousResources;
-  if (!prev) return [];
+  if (!prev) return { items: [], newPositiveTriggers: [] };
 
-  const candidates: (BriefingItem & { priority: number })[] = [];
+  type Candidate = BriefingItem & { priority: number; tone: BriefingTone };
+  const candidates: Candidate[] = [];
+  const newPositiveTriggers: string[] = [];
+  const seen = state.seenPositiveTriggers ?? [];
 
   // 1. Rival action is always included if present (highest priority)
   if (state.rival.lastAction) {
     candidates.push({
       type: 'rival',
       text: state.rival.lastAction,
+      tone: 'negative',
       priority: 100,
     });
   }
@@ -334,18 +373,21 @@ export function generateBriefingItems(state: GameState): BriefingItem[] {
       candidates.push({
         type: 'crisis',
         text: randomChoice(CRISIS_STAGE_0),
+        tone: 'negative',
         priority: 95,
       });
     } else if (stage === 1) {
       candidates.push({
         type: 'crisis',
         text: randomChoice(CRISIS_STAGE_1),
+        tone: 'negative',
         priority: 95,
       });
     } else if (stage >= 2) {
       candidates.push({
         type: 'crisis',
         text: randomChoice(CRISIS_STAGE_2_PLUS),
+        tone: 'negative',
         priority: 95,
       });
     }
@@ -357,6 +399,7 @@ export function generateBriefingItems(state: GameState): BriefingItem[] {
     candidates.push({
       type: 'discovery',
       text: randomChoice(DISCOVERY_TEXTS),
+      tone: 'negative',
       priority: 90,
     });
   }
@@ -364,123 +407,75 @@ export function generateBriefingItems(state: GameState): BriefingItem[] {
   // 4. Rival threshold crossings
   const res = state.resources;
 
-  // Rival crossed 30
   if (state.rival.power >= 30 && (state.rival.power - (state.rival.powerDelta ?? 0)) < 30) {
-    candidates.push({
-      type: 'rival',
-      text: randomChoice(RIVAL_CROSS_30),
-      priority: 82,
-    });
+    candidates.push({ type: 'rival', text: randomChoice(RIVAL_CROSS_30), tone: 'negative', priority: 82 });
   }
-
-  // Rival crossed 50
   if (state.rival.power >= 50 && (state.rival.power - (state.rival.powerDelta ?? 0)) < 50) {
-    candidates.push({
-      type: 'rival',
-      text: randomChoice(RIVAL_CROSS_50),
-      priority: 85,
-    });
+    candidates.push({ type: 'rival', text: randomChoice(RIVAL_CROSS_50), tone: 'negative', priority: 85 });
   }
-
-  // Rival crossed 75
   if (state.rival.power >= 75 && (state.rival.power - (state.rival.powerDelta ?? 0)) < 75) {
-    candidates.push({
-      type: 'rival',
-      text: randomChoice(RIVAL_CROSS_75),
-      priority: 88,
-    });
+    candidates.push({ type: 'rival', text: randomChoice(RIVAL_CROSS_75), tone: 'negative', priority: 88 });
   }
-
-  // Rival crossed 85
   if (state.rival.power >= 85 && (state.rival.power - (state.rival.powerDelta ?? 0)) < 85) {
-    candidates.push({
-      type: 'rival',
-      text: randomChoice(RIVAL_CROSS_85),
-      priority: 90,
-    });
+    candidates.push({ type: 'rival', text: randomChoice(RIVAL_CROSS_85), tone: 'negative', priority: 90 });
   }
 
-  // 5. Resource threshold crossings
+  // 4b. Rival retreating (power dropped >= 10 this turn)
+  const rivalPowerDelta = state.rival.powerDelta ?? 0;
+  if (rivalPowerDelta <= -10) {
+    candidates.push({ type: 'rival', text: randomChoice(RIVAL_RETREATING), tone: 'positive', priority: 72 });
+  }
 
-  // Inflation crossed 10
+  // 5. Resource threshold crossings (negative)
   if (res.inflation >= 10 && prev.inflation < 10) {
-    candidates.push({
-      type: 'resource',
-      text: randomChoice(INFLATION_CROSS_10),
-      priority: 80,
-    });
+    candidates.push({ type: 'resource', text: randomChoice(INFLATION_CROSS_10), tone: 'negative', priority: 80 });
   }
-
-  // Inflation crossed 18
   if (res.inflation >= 18 && prev.inflation < 18) {
-    candidates.push({
-      type: 'resource',
-      text: randomChoice(INFLATION_CROSS_18),
-      priority: 82,
-    });
+    candidates.push({ type: 'resource', text: randomChoice(INFLATION_CROSS_18), tone: 'negative', priority: 82 });
   }
-
-  // Narrative dropped below 30
   if (res.narrative < 30 && prev.narrative >= 30) {
-    candidates.push({
-      type: 'resource',
-      text: randomChoice(NARRATIVE_BELOW_30),
-      priority: 78,
-    });
+    candidates.push({ type: 'resource', text: randomChoice(NARRATIVE_BELOW_30), tone: 'negative', priority: 78 });
   }
-
-  // Narrative rose above 60
-  if (res.narrative >= 60 && prev.narrative < 60) {
-    candidates.push({
-      type: 'resource',
-      text: randomChoice(NARRATIVE_ABOVE_60),
-      priority: 70,
-    });
-  }
-
-  // Mobilization dropped below 20
   if (res.mobilization < 20 && prev.mobilization >= 20) {
-    candidates.push({
-      type: 'resource',
-      text: randomChoice(MOBILIZATION_BELOW_20),
-      priority: 75,
-    });
+    candidates.push({ type: 'resource', text: randomChoice(MOBILIZATION_BELOW_20), tone: 'negative', priority: 75 });
   }
-
-  // Polarization crossed 60
   if (res.polarization >= 60 && prev.polarization < 60) {
-    candidates.push({
-      type: 'resource',
-      text: randomChoice(POLARIZATION_ABOVE_60),
-      priority: 72,
-    });
+    candidates.push({ type: 'resource', text: randomChoice(POLARIZATION_ABOVE_60), tone: 'negative', priority: 72 });
   }
-
-  // Dread crossed 40
   if (res.dread >= 40 && prev.dread < 40) {
-    candidates.push({
-      type: 'resource',
-      text: randomChoice(DREAD_ABOVE_40),
-      priority: 74,
-    });
+    candidates.push({ type: 'resource', text: randomChoice(DREAD_ABOVE_40), tone: 'negative', priority: 74 });
   }
-
-  // Legitimacy below 30
   if (res.legitimacy < 30 && prev.legitimacy >= 30) {
-    candidates.push({
-      type: 'resource',
-      text: randomChoice(LEGITIMACY_BELOW_30),
-      priority: 76,
-    });
+    candidates.push({ type: 'resource', text: randomChoice(LEGITIMACY_BELOW_30), tone: 'negative', priority: 76 });
+  }
+  if (res.capital < 20 && prev.capital >= 20) {
+    candidates.push({ type: 'resource', text: randomChoice(CAPITAL_BELOW_20), tone: 'negative', priority: 68 });
   }
 
-  // Capital below 20
-  if (res.capital < 20 && prev.capital >= 20) {
-    candidates.push({
-      type: 'resource',
-      text: randomChoice(CAPITAL_BELOW_20),
-      priority: 68,
-    });
+  // 5b. Resource threshold crossings (positive) - with dedup via seenPositiveTriggers
+  if (res.narrative >= 60 && prev.narrative < 60 && !seen.includes('pos-narrative-60')) {
+    candidates.push({ type: 'resource', text: randomChoice(NARRATIVE_ABOVE_60), tone: 'positive', priority: 70 });
+    newPositiveTriggers.push('pos-narrative-60');
+  }
+  if (res.capital > 250 && prev.capital <= 250 && !seen.includes('pos-capital-250')) {
+    candidates.push({ type: 'resource', text: randomChoice(CAPITAL_ABOVE_50), tone: 'positive', priority: 65 });
+    newPositiveTriggers.push('pos-capital-250');
+  }
+  if (res.dread < 20 && prev.dread >= 20 && !seen.includes('pos-dread-20')) {
+    candidates.push({ type: 'resource', text: randomChoice(DREAD_BELOW_20), tone: 'positive', priority: 62 });
+    newPositiveTriggers.push('pos-dread-20');
+  }
+  if (res.polarization < 30 && prev.polarization >= 30 && !seen.includes('pos-polarization-30')) {
+    candidates.push({ type: 'resource', text: randomChoice(POLARIZATION_BELOW_30), tone: 'positive', priority: 62 });
+    newPositiveTriggers.push('pos-polarization-30');
+  }
+  if (res.mobilization > 70 && prev.mobilization <= 70 && !seen.includes('pos-mobilization-70')) {
+    candidates.push({ type: 'resource', text: randomChoice(MOBILIZATION_ABOVE_70), tone: 'positive', priority: 65 });
+    newPositiveTriggers.push('pos-mobilization-70');
+  }
+  if (res.legitimacy > 75 && prev.legitimacy <= 75 && !seen.includes('pos-legitimacy-75')) {
+    candidates.push({ type: 'resource', text: randomChoice(LEGITIMACY_ABOVE_75), tone: 'positive', priority: 68 });
+    newPositiveTriggers.push('pos-legitimacy-75');
   }
 
   // 6. Bloc loyalty shifts
@@ -491,11 +486,7 @@ export function generateBriefingItems(state: GameState): BriefingItem[] {
     if (bloc.loyalty < 25 && bloc.loyalty > 15) {
       const pool = BLOC_LOW_LOYALTY[blocId];
       if (pool && pool.length > 0) {
-        candidates.push({
-          type: 'bloc_shift',
-          text: randomChoice(pool),
-          priority: 65,
-        });
+        candidates.push({ type: 'bloc_shift', text: randomChoice(pool), tone: 'negative', priority: 65 });
       }
     }
 
@@ -503,43 +494,42 @@ export function generateBriefingItems(state: GameState): BriefingItem[] {
     if (bloc.loyalty >= 70 && bloc.loyalty <= 75) {
       const pool = BLOC_HIGH_LOYALTY[blocId];
       if (pool && pool.length > 0) {
-        candidates.push({
-          type: 'bloc_shift',
-          text: randomChoice(pool),
-          priority: 60,
-        });
+        candidates.push({ type: 'bloc_shift', text: randomChoice(pool), tone: 'positive', priority: 60 });
       }
     }
   }
 
   // 7. Policy unlocks
   if (state.newlyUnlockedPolicyIds.length > 0) {
-    candidates.push({
-      type: 'unlock',
-      text: randomChoice(POLICY_UNLOCK_TEXTS),
-      priority: 50,
-    });
+    candidates.push({ type: 'unlock', text: randomChoice(POLICY_UNLOCK_TEXTS), tone: 'positive', priority: 50 });
   }
 
   // 8. Colossus patience dropping
   if (state.colossus.patience < 30) {
-    candidates.push({
-      type: 'resource',
-      text: randomChoice(COLOSSUS_PATIENCE_LOW),
-      priority: 55,
-    });
+    candidates.push({ type: 'resource', text: randomChoice(COLOSSUS_PATIENCE_LOW), tone: 'negative', priority: 55 });
   }
 
   // 9. Color vignettes for quiet turns
   if (candidates.length < 2) {
-    candidates.push({
-      type: 'color',
-      text: randomChoice(COLOR_VIGNETTES),
-      priority: 35,
-    });
+    candidates.push({ type: 'color', text: randomChoice(COLOR_VIGNETTES), tone: 'neutral', priority: 35 });
   }
 
   // Sort by priority (highest first) and take top 3
   candidates.sort((a, b) => b.priority - a.priority);
-  return candidates.slice(0, 3).map(({ priority, ...item }) => item);
+  const top3 = candidates.slice(0, 3);
+
+  // Positivity guarantee: if all top-3 are negative/neutral and we have positive candidates, swap one in
+  const hasPositiveInTop3 = top3.some(c => c.tone === 'positive');
+  if (!hasPositiveInTop3) {
+    const bestPositive = candidates.find(c => c.tone === 'positive');
+    if (bestPositive && top3.length === 3) {
+      // Replace the lowest-priority item (last in sorted top3) with the best positive
+      top3[2] = bestPositive;
+    }
+  }
+
+  return {
+    items: top3.map(({ priority, ...item }) => item),
+    newPositiveTriggers,
+  };
 }

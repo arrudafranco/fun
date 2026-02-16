@@ -1,8 +1,14 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { BlocId } from '../types/blocs';
 import { useGameStore } from '../hooks/useGameStore';
 import { BLOC_DEFINITIONS } from '../data/blocs';
 import Tooltip from './Tooltip';
+
+function getLoyaltyTier(loyalty: number): number {
+  if (loyalty >= 60) return 2;
+  if (loyalty >= 30) return 1;
+  return 0;
+}
 
 const BLOC_EMOJI: Record<BlocId, string> = {
   court: '⚖️',
@@ -148,10 +154,22 @@ export default function BlocCard({ blocId, compact }: BlocCardProps) {
   const bloc = useGameStore(s => s.blocs[blocId]);
   const def = BLOC_DEFINITIONS[blocId];
   const [expanded, setExpanded] = useState(false);
+  const [pulsing, setPulsing] = useState(false);
+  const prevTierRef = useRef(getLoyaltyTier(bloc.loyalty));
+
+  useEffect(() => {
+    const currentTier = getLoyaltyTier(bloc.loyalty);
+    if (currentTier !== prevTierRef.current) {
+      setPulsing(true);
+      const timer = setTimeout(() => setPulsing(false), 1000);
+      prevTierRef.current = currentTier;
+      return () => clearTimeout(timer);
+    }
+  }, [bloc.loyalty]);
 
   if (compact) {
     return (
-      <div className="rounded-lg bg-slate-800/80 border border-slate-600/30 overflow-hidden">
+      <div className={`rounded-lg bg-slate-800/80 border border-slate-600/30 overflow-hidden${pulsing ? ' animate-loyalty-pulse' : ''}`}>
         <button
           onClick={() => setExpanded(!expanded)}
           className="w-full flex items-center gap-2 px-3 py-2.5 min-h-[44px] text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-inset"
@@ -220,7 +238,7 @@ export default function BlocCard({ blocId, compact }: BlocCardProps) {
 
   return (
     <Tooltip text={def.tooltip}>
-      <article className="rounded-xl p-4 shadow-md shadow-black/30 bg-slate-800/90 border border-slate-600/40 hover:border-slate-500/60 hover:-translate-y-0.5 hover:shadow-lg transition-all" aria-label={`${def.name} bloc`}>
+      <article className={`rounded-xl p-4 shadow-md shadow-black/30 bg-slate-800/90 border border-slate-600/40 hover:border-slate-500/60 hover:-translate-y-0.5 hover:shadow-lg transition-all${pulsing ? ' animate-loyalty-pulse' : ''}`} aria-label={`${def.name} bloc`}>
         <div className="flex items-center gap-2 mb-3">
           <span className="text-lg" aria-hidden="true">{BLOC_EMOJI[blocId]}</span>
           <h3 className="text-sm font-semibold text-slate-100 truncate">{def.name}</h3>

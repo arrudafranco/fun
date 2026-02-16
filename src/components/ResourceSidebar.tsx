@@ -15,18 +15,25 @@ type SidebarViewMode = 'detail' | 'overview';
 interface ResourceDef {
   key: keyof ResourceState;
   label: string;
-  color: string;
+  getColor: (value: number) => string;
   max: number;
 }
 
 const RESOURCE_DEFS: ResourceDef[] = [
-  { key: 'legitimacy', label: 'Legitimacy', color: 'bg-sky-300', max: 100 },
-  { key: 'narrative', label: 'Narrative', color: 'bg-amber-300', max: 100 },
-  { key: 'capital', label: 'Capital', color: 'bg-emerald-300', max: 999 },
-  { key: 'mobilization', label: 'Mobilization', color: 'bg-rose-300', max: 100 },
-  { key: 'polarization', label: 'Polarization', color: 'bg-orange-300', max: 100 },
-  { key: 'inflation', label: 'Inflation', color: 'bg-yellow-200', max: 30 },
-  { key: 'dread', label: 'Dread', color: 'bg-rose-400', max: 100 },
+  { key: 'legitimacy', label: 'Legitimacy', max: 100,
+    getColor: v => v < 30 ? 'bg-rose-400' : v < 50 ? 'bg-amber-400' : 'bg-sky-300' },
+  { key: 'narrative', label: 'Narrative', max: 100,
+    getColor: v => v < 30 ? 'bg-rose-400' : v < 50 ? 'bg-amber-400' : 'bg-amber-300' },
+  { key: 'capital', label: 'Capital', max: 999,
+    getColor: v => v < 100 ? 'bg-rose-400' : v < 200 ? 'bg-amber-400' : 'bg-emerald-300' },
+  { key: 'mobilization', label: 'Mobilization', max: 100,
+    getColor: v => v < 25 ? 'bg-rose-400' : v < 50 ? 'bg-amber-400' : 'bg-rose-300' },
+  { key: 'polarization', label: 'Polarization', max: 100,
+    getColor: v => v < 30 ? 'bg-emerald-300' : v < 60 ? 'bg-amber-400' : 'bg-orange-300' },
+  { key: 'inflation', label: 'Inflation', max: 30,
+    getColor: v => v < 8 ? 'bg-emerald-300' : v < 15 ? 'bg-yellow-200' : 'bg-rose-400' },
+  { key: 'dread', label: 'Dread', max: 100,
+    getColor: v => v < 20 ? 'bg-emerald-300' : v < 45 ? 'bg-amber-400' : 'bg-rose-400' },
 ];
 
 /** Resources where going UP is bad for the player */
@@ -192,7 +199,7 @@ export default function ResourceSidebar({ variant = 'sidebar' }: ResourceSidebar
                       aria-labelledby={`resource-${r.key}-label-fw`}
                     >
                       <div
-                        className={`h-full rounded-full transition-all duration-500 ${r.color}${r.key === 'narrative' && value < 30 ? ' animate-narrative-flicker' : ''}`}
+                        className={`h-full rounded-full transition-all duration-500 ${r.getColor(value)}${r.key === 'narrative' && value < 30 ? ' animate-narrative-flicker' : ''}`}
                         style={{ width: `${pct}%` }}
                       />
                     </div>
@@ -310,7 +317,7 @@ export default function ResourceSidebar({ variant = 'sidebar' }: ResourceSidebar
                       aria-labelledby={`resource-${r.key}-label`}
                     >
                       <div
-                        className={`h-full rounded-full transition-all duration-500 ${r.color}${r.key === 'narrative' && value < 30 ? ' animate-narrative-flicker' : ''}`}
+                        className={`h-full rounded-full transition-all duration-500 ${r.getColor(value)}${r.key === 'narrative' && value < 30 ? ' animate-narrative-flicker' : ''}`}
                         style={{ width: `${pct}%` }}
                       />
                     </div>

@@ -12,6 +12,7 @@ export interface EventChoice {
   id: string;
   label: string;
   tooltip: string;
+  outcomeText?: string;
   effects: {
     blocs?: BlocEffectMap;
     resources?: Partial<ResourceState>;

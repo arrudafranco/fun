@@ -5,6 +5,7 @@ import BlocGrid from './BlocGrid';
 import PolicyPicker from './PolicyPicker';
 import ResourceSidebar from './ResourceSidebar';
 import NewsLog from './NewsLog';
+import MilestonesPanel from './MilestonesPanel';
 
 interface MobileLayoutProps {
   onTabRef?: (setTab: (tab: MobileTab) => void) => void;
@@ -48,8 +49,14 @@ export default function MobileLayout({ onTabRef }: MobileLayoutProps) {
           <ResourceSidebar variant="fullwidth" />
         </div>
 
+        <div className={activeTab === 'goals' ? '' : 'hidden'}>
+          <div className="p-4">
+            <MilestonesPanel bare />
+          </div>
+        </div>
+
         <div className={activeTab === 'news' ? '' : 'hidden'}>
-          <NewsLog fullHeight />
+          <NewsLog fullHeight bare />
         </div>
       </div>
 

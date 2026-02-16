@@ -5,11 +5,21 @@ import Tooltip from './Tooltip';
 export default function EventModal() {
   const phase = useGameStore(s => s.phase);
   const currentEvent = useGameStore(s => s.currentEvent);
+  const pendingOutcome = useGameStore(s => s.pendingOutcome);
   const resolveCurrentEvent = useGameStore(s => s.resolveCurrentEvent);
+  const dismissOutcome = useGameStore(s => s.dismissOutcome);
+  const showDayOneBriefing = useGameStore(s => s.showDayOneBriefing);
   const firstButtonRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
 
-  const visible = phase === 'news' && currentEvent !== null;
+  // Don't show during tutorial or inauguration
+  const tutorialSeen = (() => {
+    try { return !!localStorage.getItem('miranda-tutorial-seen'); } catch { return true; }
+  })();
+
+  const showEvent = phase === 'news' && currentEvent !== null && tutorialSeen && !showDayOneBriefing;
+  const showOutcome = phase === 'news' && pendingOutcome !== null && currentEvent === null && tutorialSeen && !showDayOneBriefing;
+  const visible = showEvent || showOutcome;
   const hasChoices = currentEvent?.choices && currentEvent.choices.length > 0;
 
   // Auto-skip when no event this turn
@@ -31,7 +41,9 @@ export default function EventModal() {
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
       e.preventDefault();
-      if (hasChoices) {
+      if (showOutcome) {
+        dismissOutcome();
+      } else if (hasChoices) {
         resolveCurrentEvent(currentEvent!.choices![0].id);
       } else {
         resolveCurrentEvent();
@@ -57,9 +69,43 @@ export default function EventModal() {
         first.focus();
       }
     }
-  }, [hasChoices, currentEvent, resolveCurrentEvent]);
+  }, [hasChoices, showOutcome, currentEvent, resolveCurrentEvent, dismissOutcome]);
 
-  if (!visible || !currentEvent) return null;
+  if (!visible) return null;
+
+  // Outcome card stage (after event choice resolved)
+  if (showOutcome && pendingOutcome) {
+    return (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 overflow-y-auto"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="outcome-title"
+        onKeyDown={handleKeyDown}
+      >
+        <div ref={dialogRef} className="bg-slate-800 border border-slate-600 rounded-2xl shadow-2xl max-w-lg w-full mx-4 my-4 overflow-hidden shrink-0">
+          <div className="h-1 bg-gradient-to-r from-amber-500 via-amber-400 to-transparent" />
+          <div className="p-6">
+            <h2 id="outcome-title" className="text-lg font-bold text-amber-400 mb-3">
+              {pendingOutcome.choiceLabel}
+            </h2>
+            <p className="text-slate-300 text-sm leading-relaxed italic mb-6">
+              {pendingOutcome.text}
+            </p>
+            <button
+              ref={firstButtonRef}
+              onClick={() => dismissOutcome()}
+              className="w-full px-4 py-3 rounded-lg bg-amber-800/60 hover:bg-amber-700/60 text-amber-50 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentEvent) return null;
 
   return (
     <div

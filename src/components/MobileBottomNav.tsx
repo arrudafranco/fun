@@ -1,7 +1,7 @@
 import { useRef, useCallback } from 'react';
 import { useGameStore } from '../hooks/useGameStore';
 
-export type MobileTab = 'blocs' | 'actions' | 'status' | 'news';
+export type MobileTab = 'blocs' | 'actions' | 'status' | 'goals' | 'news';
 
 interface MobileBottomNavProps {
   activeTab: MobileTab;
@@ -12,6 +12,7 @@ const TABS: { id: MobileTab; label: string }[] = [
   { id: 'blocs', label: 'Blocs' },
   { id: 'actions', label: 'Actions' },
   { id: 'status', label: 'Status' },
+  { id: 'goals', label: 'Goals' },
   { id: 'news', label: 'News' },
 ];
 
@@ -53,10 +54,21 @@ function NewsIcon({ active }: { active: boolean }) {
   );
 }
 
+function GoalsIcon({ active }: { active: boolean }) {
+  return (
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={active ? 2.5 : 2}>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="5" />
+      <circle cx="12" cy="12" r="1" fill="currentColor" />
+    </svg>
+  );
+}
+
 const ICONS: Record<MobileTab, (props: { active: boolean }) => JSX.Element> = {
   blocs: BlocsIcon,
   actions: ActionsIcon,
   status: StatusIcon,
+  goals: GoalsIcon,
   news: NewsIcon,
 };
 
@@ -96,7 +108,7 @@ export default function MobileBottomNav({ activeTab, onTabChange }: MobileBottom
       {/* Animated active indicator */}
       <div
         className="absolute top-0 h-0.5 bg-cyan-400 transition-all duration-200"
-        style={{ left: `${activeIdx * 25}%`, width: '25%' }}
+        style={{ left: `${activeIdx * 20}%`, width: '20%' }}
         aria-hidden="true"
       />
 

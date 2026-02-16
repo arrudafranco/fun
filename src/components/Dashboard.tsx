@@ -14,6 +14,9 @@ import DayOneBriefing from './DayOneBriefing';
 import HelpButton from './HelpButton';
 import SaveControls from './SaveControls';
 import MobileLayout from './MobileLayout';
+import MilestonesPanel from './MilestonesPanel';
+import MilestoneRewardCard from './MilestoneRewardCard';
+import PresidentialDispatch from './PresidentialDispatch';
 import type { MobileTab } from './MobileBottomNav';
 
 const PHASE_LABELS: Record<string, string> = {
@@ -98,8 +101,9 @@ function DesktopBody() {
       <ResourceSidebar />
       <main id="main-content" className="flex-1 overflow-y-auto">
         <BlocGrid />
-        <NewsLog />
         {phase === 'action' && <PolicyPicker />}
+        <MilestonesPanel />
+        <NewsLog />
       </main>
     </div>
   );
@@ -128,8 +132,10 @@ export default function Dashboard() {
 
       {/* Modals (self-manage visibility) */}
       <EventModal />
+      <MilestoneRewardCard />
       <TurnBriefing />
       <DayOneBriefing />
+      <PresidentialDispatch />
       <GameOverScreen />
       <TutorialOverlay onMobileTabChange={isMobile ? handleTutorialTabChange : undefined} />
     </div>

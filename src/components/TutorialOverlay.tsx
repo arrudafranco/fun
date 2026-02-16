@@ -19,60 +19,94 @@ interface TutorialStep {
 }
 
 const STEPS: TutorialStep[] = [
+  // 1. Welcome (no spotlight)
   {
     title: 'Welcome to Miranda',
     body: 'You are the newly elected leader of the Republic of Miranda. Your term lasts 48 months (turns). Survive, thrive, or be overthrown. Good luck... you will need it.',
   },
+  // 2. Resources
   {
     title: 'Resources',
     body: 'The sidebar tracks your political resources. Legitimacy keeps you in power. Capital funds your policies (you earn a base income each turn, plus trade income). Narrative shapes public opinion. Polarization makes everything harder. Keep an eye on all of them.',
     mobileBody: 'The Status tab tracks your political resources. Legitimacy keeps you in power. Capital funds your policies (you earn a base income each turn, plus trade income). Narrative shapes public opinion. Polarization makes everything harder. Keep an eye on all of them.',
     spotlight: { desktop: 'resources', mobile: 'tab-status', mobileTab: 'status' },
   },
+  // 3. Key Panels
   {
     title: 'Key Panels',
     body: "Below your resources, you'll find three key panels. The Central Bank tracks how independent Miranda's monetary policy is... high independence pleases the Banks but limits your economic tools. The Colossus is the superpower watching Miranda's every move. And Congress tracks your legislative support.",
     mobileBody: "In the Status tab, you'll find three key panels below your resources. The Central Bank tracks how independent Miranda's monetary policy is... high independence pleases the Banks but limits your economic tools. The Colossus is the superpower watching Miranda's every move. And Congress tracks your legislative support.",
     spotlight: { desktop: 'panels', mobile: 'tab-status', mobileTab: 'status' },
   },
+  // 4. Congress
   {
     title: 'Congress',
     body: "If blocs loyal to you hold a majority in Congress, legislative policy costs drop 15%. Lose your majority and costs rise 15%, your legitimacy drains, and your rival exploits the weakness. Keep the powerful blocs on your side.",
     spotlight: { desktop: 'congress', mobile: 'tab-status', mobileTab: 'status' },
   },
+  // 5. Blocs
   {
     title: 'Blocs',
     body: 'Miranda\'s power blocs each have loyalty (how much they support you) and power (how much influence they wield). Keep the right blocs happy, or face the consequences.',
     spotlight: { desktop: 'blocs', mobile: 'tab-blocs', mobileTab: 'blocs' },
   },
+  // 6. The Rival
   {
     title: 'The Rival',
     body: 'Your political rival is not sitting idle. Each turn, they act against you. Watch their panel for what they did and how fast their power is growing. If they trigger Gridlock or a Culture War, you will see badges with countdowns and their effects. Keep their power below 100 or they win.',
     spotlight: { desktop: 'rival', mobile: 'tab-status', mobileTab: 'status' },
   },
+  // 7. Your Turn
   {
     title: 'Your Turn',
     body: 'Each turn, a news event may occur. Then you choose policies to enact. Hover over a policy card to see its full effects. After that, the blocs, the Rival, and the Colossus react. Choose wisely... every action has consequences.',
     mobileBody: 'Each turn, a news event may occur. Then you choose policies to enact. Tap a policy name to see its full effects. After that, the blocs, the Rival, and the Colossus react. Choose wisely... every action has consequences.',
     spotlight: { desktop: 'policies', mobile: 'tab-actions', mobileTab: 'actions' },
   },
+  // 8. Policy Categories
   {
     title: 'Policy Categories',
     body: 'Policies are organized by category (Economic, Labor, Security, and more). Use the tabs above the policy grid to filter. Some policies are locked at the start and unlock as your government grows... through time, relationships, or the political climate. Locked cards show hints about what you need.',
     spotlight: { desktop: 'policy-tabs', mobile: 'tab-actions', mobileTab: 'actions' },
   },
+  // 9. Locked Policies (NEW)
+  {
+    title: 'Locked Policies',
+    body: 'You can toggle locked policies on or off with the "Hide Locked" button. Locked policies unlock through time, relationships, or the political climate. Hiding them keeps your action list focused on what you can do right now.',
+    spotlight: { desktop: 'locked-toggle', mobile: 'tab-actions', mobileTab: 'actions' },
+  },
+  // 10. Backroom Deals
+  {
+    title: 'Backroom Deals',
+    body: 'Some backroom policies let you choose which bloc to target. When you select one, a modal will ask you to pick a bloc. That bloc receives a direct loyalty bonus. Useful for shoring up wavering allies, but be careful. The discovery risk is real.',
+    spotlight: { desktop: 'policies', mobile: 'tab-actions', mobileTab: 'actions' },
+  },
+  // 11. View Modes
   {
     title: 'View Modes',
     body: 'Each major panel (blocs, policies, sidebar) has an Overview/Detail toggle. Overview mode condenses information into compact rows for quick scanning. Detail mode shows full cards with progress bars. Your preference is saved automatically. Try both and see what fits your play style.',
     mobileBody: 'On mobile, each panel is already optimized for compact viewing. On larger screens you can toggle between Overview and Detail modes for blocs, policies, and the sidebar.',
+    spotlight: { desktop: 'bloc-view-toggle', mobile: 'tab-blocs', mobileTab: 'blocs' },
   },
+  // 12. Milestones
   {
-    title: 'Backroom Deals',
-    body: 'Some backroom policies let you choose which bloc to target. When you select one, a modal will ask you to pick a bloc. That bloc receives a direct loyalty bonus. Useful for shoring up wavering allies, but be careful. The discovery risk is real.',
+    title: 'Milestones',
+    body: 'As you govern, you can achieve milestones by meeting certain conditions. Each milestone has a checklist of requirements. Some milestones are hidden until you achieve them. Completing milestones unlocks exclusive policies and other rewards.',
+    mobileBody: 'The Goals tab tracks your milestones. Each has conditions to meet. Some are hidden until achieved. Completing milestones unlocks exclusive policies and other rewards.',
+    spotlight: { desktop: 'milestones', mobile: 'tab-goals', mobileTab: 'goals' },
   },
+  // 13. Collapsing Sections
+  {
+    title: 'Collapsing Sections',
+    body: 'On desktop, each major section (blocs, news, policies) has a chevron button next to its title. Click it to collapse or expand the section, reducing scrolling. Your preference is saved automatically.',
+    mobileBody: 'On mobile, sections are separated into tabs, so there is nothing to collapse. On larger screens, you can collapse sections to reduce scrolling.',
+    spotlight: { desktop: 'collapse-chevron' },
+  },
+  // 14. Turn Reports
   {
     title: 'Turn Reports',
     body: 'After your turn ends, you may see a brief report of what happened across Miranda. These are narrative snapshots, not exhaustive summaries. Pay attention to what the Rival is doing and any crises unfolding. Or press Continue to skip ahead.',
+    spotlight: { desktop: 'news-log', mobile: 'tab-news', mobileTab: 'news' },
   },
 ];
 
@@ -202,10 +236,12 @@ export default function TutorialOverlay({ forceShow, onClose, onMobileTabChange 
     // Small delay to let tab switch render
     const timer = setTimeout(updatePosition, 100);
     window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, { capture: true });
 
     return () => {
       clearTimeout(timer);
       window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, { capture: true });
     };
   }, [visible, step, isMobile, onMobileTabChange]);
 

@@ -13,6 +13,7 @@ export const EVENT_POOL: GameEvent[] = [
         id: 'cover_spectacle',
         label: 'Let the Heralds cover it',
         tooltip: 'Ratings gold. The Rival gets airtime, but the Heralds are happy.',
+        outcomeText: 'The cameras rolled. The Rival looked good on screen. But so did the democratic process. You hope that matters more.',
         effects: {
           blocs: { media: { loyalty: +5 } },
           resources: { polarization: +3 },
@@ -23,6 +24,7 @@ export const EVENT_POOL: GameEvent[] = [
         id: 'downplay_rally',
         label: 'Pressure the Heralds to downplay it',
         tooltip: 'Suppress coverage. The Heralds resent it. The Rival grows in the shadows.',
+        outcomeText: 'The morning papers were thin. But whispers travel faster than print. The Rival\'s supporters shared the footage anyway.',
         effects: {
           blocs: { media: { loyalty: -5 } },
           rivalPower: +5,
@@ -101,6 +103,7 @@ export const EVENT_POOL: GameEvent[] = [
         id: 'raise_rates',
         label: 'Raise interest rates',
         tooltip: 'Stabilize the currency. Growth, jobs, and popularity take a hit.',
+        outcomeText: 'The peso stabilized by noon. The unemployment line grew by evening. Your Finance Minister called it "necessary medicine." The patients disagreed.',
         effects: {
           resources: { inflation: -3, capital: -15 },
           blocs: { finance: { loyalty: +10 }, labor: { loyalty: -10 }, industry: { loyalty: -5 } },
@@ -128,6 +131,7 @@ export const EVENT_POOL: GameEvent[] = [
         id: 'accept_loan',
         label: 'Accept the loan',
         tooltip: 'Money now, sovereignty later.',
+        outcomeText: 'The check cleared. The ambassador shook your hand for slightly too long. "We are partners now," she said. The word "partners" did a lot of heavy lifting.',
         effects: {
           resources: { capital: +40, colossusAlignment: +10 },
           blocs: { finance: { loyalty: +10 }, industry: { loyalty: -5 }, labor: { loyalty: -5 } },
@@ -137,6 +141,7 @@ export const EVENT_POOL: GameEvent[] = [
         id: 'decline_loan',
         label: 'Politely decline',
         tooltip: 'Sovereignty now, money never.',
+        outcomeText: 'The ambassador\'s smile froze. "We understand," she said. She did not understand. The treasury remained empty but yours.',
         effects: {
           resources: { colossusAlignment: -5 },
           blocs: { industry: { loyalty: +5 }, labor: { loyalty: +5 } },
@@ -605,6 +610,7 @@ export const EVENT_POOL: GameEvent[] = [
         id: 'bailout_banks',
         label: 'Bail out the banks',
         tooltip: 'Save the system. Pay the price.',
+        outcomeText: 'The banks reopened Monday morning. The treasury was lighter by a generation\'s savings. The Banks sent a thank-you note. Main Street sent something less polite.',
         effects: {
           resources: { capital: -40, legitimacy: -5 },
           blocs: { finance: { loyalty: +15 }, mainStreet: { loyalty: -10 }, labor: { loyalty: -10 } },
@@ -614,6 +620,7 @@ export const EVENT_POOL: GameEvent[] = [
         id: 'nationalize_banks',
         label: 'Nationalize failing banks',
         tooltip: 'Take control. The Banks will never forgive you. Everyone else might.',
+        outcomeText: 'Government officials arrived at the banks with paperwork and purpose. The tellers looked confused. The executives looked furious. Main Street looked... relieved.',
         effects: {
           blocs: { finance: { loyalty: -20, power: -10 }, labor: { loyalty: +10 }, mainStreet: { loyalty: +5 } },
           resources: { legitimacy: +5, polarization: +5 },
@@ -752,6 +759,7 @@ export const EVENT_POOL: GameEvent[] = [
         id: 'grand_bargain',
         label: 'Propose a grand bargain',
         tooltip: 'Everyone gets something. Nobody gets everything. That\'s how it works.',
+        outcomeText: 'Negotiations lasted forty-eight hours. The table was littered with coffee cups and compromises. When it was over, nobody was happy. That meant it worked.',
         effects: {
           blocs: { labor: { loyalty: +10 }, finance: { loyalty: -5 }, industry: { loyalty: -5 } },
           resources: { capital: -25, legitimacy: +5 },
@@ -828,6 +836,7 @@ export const EVENT_POOL: GameEvent[] = [
         id: 'accept_findings',
         label: 'Accept the findings',
         tooltip: 'Take responsibility. It hurts now but heals later.',
+        outcomeText: 'You stood at the podium and said the words nobody expected. "We were wrong." The silence lasted three seconds. Then something shifted. The Heralds wrote about integrity. The Court nodded.',
         effects: {
           blocs: { court: { loyalty: +10 }, media: { loyalty: +5 } },
           resources: { legitimacy: +5, narrative: +5 },
@@ -900,6 +909,7 @@ export const EVENT_POOL: GameEvent[] = [
         id: 'capitulate',
         label: 'Accept the terms',
         tooltip: 'Survival first. Dignity later.',
+        outcomeText: 'You signed the document at 3 AM. The ambassador was the only one smiling. Your aide said nothing on the drive home. The aircraft carrier turned around by morning.',
         effects: {
           resources: { colossusAlignment: +20, legitimacy: -10, narrative: -10 },
           blocs: { military: { loyalty: -10 } },
@@ -910,6 +920,7 @@ export const EVENT_POOL: GameEvent[] = [
         id: 'resist_ultimatum',
         label: 'Refuse the ultimatum',
         tooltip: 'Miranda will not kneel. The consequences will be significant.',
+        outcomeText: 'Your statement was broadcast at prime time. The words "Miranda will not kneel" trended internationally by midnight. The Generals saluted. The Colossus went quiet. Quiet is not the same as gone.',
         effects: {
           resources: { colossusAlignment: -15, narrative: +10, mobilization: +10 },
           blocs: { military: { loyalty: +10 }, labor: { loyalty: +5 } },
@@ -930,6 +941,7 @@ export const EVENT_POOL: GameEvent[] = [
         id: 'massive_relief',
         label: 'Launch massive relief effort',
         tooltip: 'Empty the coffers. Fill the sandbags. Show up with cameras.',
+        outcomeText: 'Helicopters flew all night. Sandbags by the thousands. Your boots were muddy on the evening news. The Clergy opened every door. Main Street started cleaning before the water receded.',
         effects: {
           resources: { capital: -30, legitimacy: +5, narrative: +5 },
           blocs: { mainStreet: { loyalty: +10 }, agri: { loyalty: +5 }, clergy: { loyalty: +5 } },

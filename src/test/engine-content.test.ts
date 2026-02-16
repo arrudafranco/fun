@@ -149,7 +149,8 @@ describe('Policy Unlock System', () => {
     s.turn = 20;
     processUnlocks(s);
     const stillLocked = POLICIES.filter(p => !s.unlockedPolicyIds.includes(p.id));
-    expect(stillLocked.length).toBeLessThanOrEqual(5);
+    // 5 milestone-exclusive policies won't unlock from conditions alone
+    expect(stillLocked.length).toBeLessThanOrEqual(10);
   });
 });
 
@@ -158,7 +159,7 @@ describe('Briefing Generation', () => {
     seedRng(2101);
     const s = createInitialState();
     s.previousResources = null;
-    expect(generateBriefingItems(s).length).toBe(0);
+    expect(generateBriefingItems(s).items.length).toBe(0);
   });
 
   it('returns at most 3 items', () => {
@@ -180,7 +181,7 @@ describe('Briefing Generation', () => {
     s.resources.mobilization = 15;
     s.previousResources.mobilization = 25;
 
-    const items = generateBriefingItems(s);
+    const items = generateBriefingItems(s).items;
     expect(items.length).toBeLessThanOrEqual(3);
     expect(items.length).toBeGreaterThan(0);
     for (const item of items) {
@@ -192,7 +193,7 @@ describe('Briefing Generation', () => {
     const s = createInitialState();
     s.previousResources = deepClone(s.resources);
     s.rival.lastAction = 'The Rival organized a rally.';
-    const items = generateBriefingItems(s);
+    const items = generateBriefingItems(s).items;
     expect(items.length).toBeGreaterThanOrEqual(1);
     expect(items[0].type).toBe('rival');
   });
@@ -201,7 +202,7 @@ describe('Briefing Generation', () => {
     const s = createInitialState();
     s.previousResources = deepClone(s.resources);
     s.activeCrises = [{ chainId: 'banking_crisis', stageIndex: 0, turnsAtStage: 0, resolved: false }];
-    const items = generateBriefingItems(s);
+    const items = generateBriefingItems(s).items;
     expect(items.some(i => i.type === 'crisis')).toBe(true);
   });
 
@@ -209,7 +210,7 @@ describe('Briefing Generation', () => {
     const s = createInitialState();
     s.previousResources = deepClone(s.resources);
     s.previousResources.legitimacy = s.resources.legitimacy + 20;
-    const items = generateBriefingItems(s);
+    const items = generateBriefingItems(s).items;
     expect(items.some(i => i.type === 'discovery')).toBe(true);
   });
 
@@ -218,14 +219,20 @@ describe('Briefing Generation', () => {
     s.previousResources = deepClone(s.resources);
     s.resources.inflation = 10;
     s.previousResources.inflation = 8;
-    expect(generateBriefingItems(s).some(i => i.type === 'resource')).toBe(true);
+    expect(generateBriefingItems(s).items.some(i => i.type === 'resource')).toBe(true);
   });
 
-  it('injects color vignette on quiet turn', () => {
+  it('injects color vignette on quiet turn with no positive triggers', () => {
     const s = createInitialState();
     s.previousResources = deepClone(s.resources);
     s.rival.lastAction = '';
-    const items = generateBriefingItems(s);
+    // Neutralize positive triggers so only color vignettes remain
+    s.resources.capital = 40; // below 50 threshold
+    s.resources.dread = 25;   // above 20 threshold
+    s.resources.polarization = 35; // above 30 threshold
+    s.resources.mobilization = 50; // below 70 threshold
+    s.resources.legitimacy = 60;  // below 75 threshold
+    const items = generateBriefingItems(s).items;
     expect(items.length).toBe(1);
     expect(items[0].type).toBe('color');
   });
@@ -234,21 +241,27 @@ describe('Briefing Generation', () => {
     const s = createInitialState();
     s.previousResources = deepClone(s.resources);
     s.blocs.finance.loyalty = 22;
-    expect(generateBriefingItems(s).some(i => i.type === 'bloc_shift')).toBe(true);
+    expect(generateBriefingItems(s).items.some(i => i.type === 'bloc_shift')).toBe(true);
   });
 
   it('generates unlock item for newly unlocked policies', () => {
     const s = createInitialState();
     s.previousResources = deepClone(s.resources);
+    // Neutralize positive resource triggers so unlock isn't pushed out by positivity guarantee
+    s.resources.capital = 40;
+    s.resources.dread = 25;
+    s.resources.polarization = 35;
+    s.resources.mobilization = 50;
+    s.resources.legitimacy = 60;
     s.newlyUnlockedPolicyIds = ['some_policy'];
-    expect(generateBriefingItems(s).some(i => i.type === 'unlock')).toBe(true);
+    expect(generateBriefingItems(s).items.some(i => i.type === 'unlock')).toBe(true);
   });
 
   it('generates item for low Colossus patience', () => {
     const s = createInitialState();
     s.previousResources = deepClone(s.resources);
     s.colossus.patience = 25;
-    expect(generateBriefingItems(s).some(i => i.type === 'resource')).toBe(true);
+    expect(generateBriefingItems(s).items.some(i => i.type === 'resource')).toBe(true);
   });
 
   it('integrates with processFullTurnImpl', () => {
@@ -302,7 +315,13 @@ describe('Content Expansion', () => {
     const state = createInitialState();
     state.previousResources = deepClone(state.resources);
     state.rival.lastAction = '';
-    const items = generateBriefingItems(state);
+    // Neutralize positive triggers
+    state.resources.capital = 40;
+    state.resources.dread = 25;
+    state.resources.polarization = 35;
+    state.resources.mobilization = 50;
+    state.resources.legitimacy = 60;
+    const items = generateBriefingItems(state).items;
     const color = items.find(i => i.type === 'color');
     expect(color).toBeDefined();
     expect(color!.text.length).toBeGreaterThan(0);

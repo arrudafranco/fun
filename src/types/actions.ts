@@ -41,7 +41,7 @@ export interface PolicyEffects {
 }
 
 export interface UnlockCondition {
-  type: 'turn' | 'bloc_loyalty' | 'resource' | 'event' | 'always';
+  type: 'turn' | 'bloc_loyalty' | 'resource' | 'event' | 'always' | 'milestone';
   turn?: number;
   blocId?: BlocId;
   loyaltyMin?: number;
@@ -50,6 +50,7 @@ export interface UnlockCondition {
   resourceMin?: number;
   resourceMax?: number;
   eventId?: string;
+  milestoneId?: string;
   /** Also require another condition (OR logic for multiple entries, AND with parent) */
   or?: UnlockCondition;
   hint: string;

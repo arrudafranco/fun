@@ -17,7 +17,13 @@ export default function RivalBar() {
       : 'Rival power unchanged this turn';
 
   return (
-    <div className="rounded-xl p-3 bg-slate-800 border border-rose-400/30 shadow-md shadow-rose-900/20">
+    <div
+      className="rounded-xl p-3 bg-slate-800 border border-rose-400/30"
+      style={{
+        borderColor: `rgba(251,113,133,${Math.min(rival.power / 100, 0.3).toFixed(2)})`,
+        boxShadow: `0 4px 6px -1px rgba(136,19,55,${Math.min(rival.power / 100 * 0.4, 0.2).toFixed(2)})`,
+      }}
+    >
       <h3 className="text-xs font-semibold text-rose-300 uppercase tracking-wider mb-1 font-pixel">
         Rival
       </h3>
@@ -85,7 +91,7 @@ export default function RivalBar() {
               className="h-full rounded-full transition-all duration-500 bg-rose-400"
               style={{
                 width: `${rival.power}%`,
-                boxShadow: '0 0 10px rgba(251,113,133,0.5)',
+                boxShadow: `0 0 ${Math.max(4, rival.power / 5)}px rgba(251,113,133,${Math.min(0.8, rival.power / 100).toFixed(2)})`,
               }}
             />
           </div>

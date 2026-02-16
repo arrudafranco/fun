@@ -50,6 +50,19 @@ export function checkInvariants(state: GameState): string[] {
   check(typeof state.congress.friendlyMajority === 'boolean',
     `friendlyMajority must be boolean, got: ${typeof state.congress.friendlyMajority}`);
 
+  // New fields from milestone/reinforcement update
+  check(Array.isArray(state.seenPositiveTriggers),
+    `seenPositiveTriggers must be array`);
+  check(state.eventCooldowns !== undefined && typeof state.eventCooldowns === 'object',
+    `eventCooldowns must be an object`);
+  for (const [, v] of Object.entries(state.eventCooldowns ?? {})) {
+    check(typeof v === 'number' && v > 0, `eventCooldown value must be positive number, got: ${v}`);
+  }
+  check(Array.isArray(state.achievedMilestoneIds),
+    `achievedMilestoneIds must be array`);
+  check(typeof state.policiesEnactedCount === 'number' && state.policiesEnactedCount >= 0,
+    `policiesEnactedCount must be non-negative, got: ${state.policiesEnactedCount}`);
+
   // Game over must have valid ending
   if (state.gameOver) {
     check(state.ending !== null, 'gameOver=true but ending is null');

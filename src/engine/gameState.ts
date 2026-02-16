@@ -21,9 +21,12 @@ import { selectNewsEvent, resolveEvent, checkEndPhaseEvents } from './events';
 import { EVENT_POOL } from '../data/events';
 import { processDiscoveryTick } from './discovery';
 import { processCrisisTick } from './crisisChains';
-import { clamp, rollChance, deepClone } from '../utils/helpers';
+import { clamp, rollChance, deepClone, randomChoice } from '../utils/helpers';
 import { getStartingPolicyIds, processUnlocks } from './unlocks';
 import { generateBriefingItems } from './briefing';
+import { checkMilestones } from './milestones';
+import { MILESTONES } from '../data/milestones';
+import { GENERIC_OUTCOME_TEXTS } from '../data/outcomeTexts';
 
 const SAVE_KEY = 'miranda-save';
 
@@ -37,6 +40,9 @@ export interface GameStore extends GameState {
   getState: () => GameState;
   startNewsPhase: () => void;
   resolveCurrentEvent: (choiceId?: string) => void;
+  dismissOutcome: () => void;
+  dismissMilestoneReward: () => void;
+  dismissDispatch: () => void;
   submitActions: (actions: ActionChoice[]) => void;
   dismissBriefing: () => void;
   dismissDayOneBriefing: () => void;
@@ -89,8 +95,15 @@ function createInitialState(difficulty: Difficulty = 'standard'): GameState {
     showDayOneBriefing: true,
     newsLog: [],
     previousResources: null,
+    seenPositiveTriggers: [],
+    eventCooldowns: {},
+    pendingOutcome: null,
+    achievedMilestoneIds: [],
+    pendingMilestoneReward: null,
+    policiesEnactedCount: 0,
     ending: null,
     gameOver: false,
+    showDispatch: false,
   };
 }
 
@@ -157,6 +170,9 @@ function resolveAction(state: GameState, action: ActionChoice): void {
     if (state.blocs.syndicate.loyalty < policy.requiresSyndicateLoyalty) return;
   }
   if (policy.requiresMajority && !state.congress.friendlyMajority) return;
+
+  // Track policies enacted for milestones
+  state.policiesEnactedCount++;
 
   // Calculate actual capital cost with polarization modifier
   const costMultiplier = getPolarizationCostMultiplier(
@@ -362,6 +378,17 @@ function checkWinLossConditions(state: GameState): EndingId | null {
   return 'impeached';
 }
 
+function inferEventTone(event: import('../types/events').GameEvent): 'positive' | 'negative' | 'neutral' {
+  const effects = event.autoEffects;
+  if (!effects) return 'neutral';
+  const r = effects.resources;
+  if (r) {
+    if ((r.legitimacy && r.legitimacy < 0) || (r.polarization && r.polarization > 0) || (r.dread && r.dread > 0)) return 'negative';
+    if ((r.legitimacy && r.legitimacy > 0) || (r.capital && r.capital > 0)) return 'positive';
+  }
+  return 'neutral';
+}
+
 function startNewsPhaseImpl(state: GameState): void {
   state.phase = 'news';
 
@@ -371,7 +398,7 @@ function startNewsPhaseImpl(state: GameState): void {
     const crisisEvent = EVENT_POOL.find(e => e.id === crisisEventId) ?? null;
     state.currentEvent = crisisEvent;
     if (crisisEvent) {
-      state.newsLog.push({ turn: state.turn, headline: crisisEvent.name });
+      state.newsLog.push({ turn: state.turn, headline: crisisEvent.name, tone: 'negative' });
     }
     return;
   }
@@ -380,9 +407,14 @@ function startNewsPhaseImpl(state: GameState): void {
   state.currentEvent = newsEvent;
 
   if (newsEvent) {
-    state.newsLog.push({ turn: state.turn, headline: newsEvent.name });
+    state.newsLog.push({ turn: state.turn, headline: newsEvent.name, tone: inferEventTone(newsEvent) });
+    // Set event cooldown for non-oneShot events
+    if (!newsEvent.oneShot) {
+      const cooldown = newsEvent.trigger.type === 'random' ? 12 : 10;
+      state.eventCooldowns[newsEvent.id] = state.turn + cooldown;
+    }
   } else {
-    state.newsLog.push({ turn: state.turn, headline: 'A quiet month in Miranda. Suspicious.' });
+    state.newsLog.push({ turn: state.turn, headline: 'A quiet month in Miranda. Suspicious.', tone: 'neutral' });
   }
 
   // Auto-resolve events without choices immediately
@@ -445,7 +477,10 @@ function submitActionsImpl(state: GameState, actions: ActionChoice[]): void {
 
   const endEvent = checkEndPhaseEvents(state);
   if (endEvent) {
-    state.newsLog.push({ turn: state.turn, headline: endEvent.name });
+    state.newsLog.push({ turn: state.turn, headline: endEvent.name, tone: inferEventTone(endEvent) });
+    if (!endEvent.oneShot) {
+      state.eventCooldowns[endEvent.id] = state.turn + 10;
+    }
     if (!endEvent.choices) {
       resolveEvent(state, endEvent);
     }
@@ -469,19 +504,53 @@ function submitActionsImpl(state: GameState, actions: ActionChoice[]): void {
   for (const policyId of newUnlocks) {
     const policy = POLICIES.find(p => p.id === policyId);
     if (policy) {
-      state.newsLog.push({ turn: state.turn, headline: `New policy available: ${policy.name}` });
+      state.newsLog.push({ turn: state.turn, headline: `New policy available: ${policy.name}`, tone: 'positive' });
     }
   }
 
   // Generate turn briefing
-  const briefing = generateBriefingItems(state);
-  state.briefingItems = briefing;
-  state.showBriefing = briefing.length > 0 && !state.skipBriefings;
+  const briefingResult = generateBriefingItems(state);
+  state.briefingItems = briefingResult.items;
+  // Push newly fired positive triggers to prevent repeats
+  for (const key of briefingResult.newPositiveTriggers) {
+    if (!state.seenPositiveTriggers.includes(key)) {
+      state.seenPositiveTriggers.push(key);
+    }
+  }
+  state.showBriefing = briefingResult.items.length > 0 && !state.skipBriefings;
+
+  // Check milestones after everything is resolved
+  const milestoneResult = checkMilestones(state);
+  for (const id of milestoneResult) {
+    const milestone = MILESTONES.find(m => m.id === id);
+    if (!milestone) continue;
+    state.achievedMilestoneIds.push(id);
+    // Apply reward effects
+    if (milestone.rewardEffects?.resources) {
+      applyResourceDeltas(state.resources, milestone.rewardEffects.resources);
+    }
+    if (milestone.rewardEffects?.rivalPower) {
+      state.rival.power = clamp(state.rival.power + milestone.rewardEffects.rivalPower, 0, 100);
+    }
+    // Unlock reward policy
+    if (milestone.rewardPolicyId && !state.unlockedPolicyIds.includes(milestone.rewardPolicyId)) {
+      state.unlockedPolicyIds.push(milestone.rewardPolicyId);
+      const rPolicy = POLICIES.find(p => p.id === milestone.rewardPolicyId);
+      if (rPolicy) {
+        state.newsLog.push({ turn: state.turn, headline: `Milestone unlocked: ${milestone.name}. New policy available: ${rPolicy.name}`, tone: 'positive' });
+      }
+    } else {
+      state.newsLog.push({ turn: state.turn, headline: `Milestone achieved: ${milestone.name}`, tone: 'positive' });
+    }
+    // Set pending reward for UI
+    state.pendingMilestoneReward = { name: milestone.name, rewardText: milestone.rewardText };
+  }
 
   const ending = checkWinLossConditions(state);
   if (ending) {
     state.ending = ending;
     state.gameOver = true;
+    state.showDispatch = true;
     state.showBriefing = false;
     return;
   }
@@ -517,9 +586,14 @@ function processFullTurnImpl(state: GameState, actions: ActionChoice[]): void {
   state.currentEvent = newsEvent;
 
   if (newsEvent) {
-    state.newsLog.push({ turn: state.turn, headline: newsEvent.name });
+    state.newsLog.push({ turn: state.turn, headline: newsEvent.name, tone: inferEventTone(newsEvent) });
+    // Set cooldown for non-oneShot events
+    if (!newsEvent.oneShot) {
+      const cooldown = newsEvent.trigger.type === 'random' ? 12 : 10;
+      state.eventCooldowns[newsEvent.id] = state.turn + cooldown;
+    }
   } else {
-    state.newsLog.push({ turn: state.turn, headline: 'A quiet month in Miranda. Suspicious.' });
+    state.newsLog.push({ turn: state.turn, headline: 'A quiet month in Miranda. Suspicious.', tone: 'neutral' });
   }
 
   // Auto-resolve events without choices for testing
@@ -599,7 +673,10 @@ function processFullTurnImpl(state: GameState, actions: ActionChoice[]): void {
   // Check end-phase events (loyalty thresholds)
   const endEvent = checkEndPhaseEvents(state);
   if (endEvent) {
-    state.newsLog.push({ turn: state.turn, headline: endEvent.name });
+    state.newsLog.push({ turn: state.turn, headline: endEvent.name, tone: inferEventTone(endEvent) });
+    if (!endEvent.oneShot) {
+      state.eventCooldowns[endEvent.id] = state.turn + 10;
+    }
     if (!endEvent.choices) {
       resolveEvent(state, endEvent);
     }
@@ -621,6 +698,23 @@ function processFullTurnImpl(state: GameState, actions: ActionChoice[]): void {
   state.newlyUnlockedPolicyIds = [];
   const newUnlocks = processUnlocks(state);
   state.newlyUnlockedPolicyIds = newUnlocks;
+
+  // Check milestones
+  const milestoneIds = checkMilestones(state);
+  for (const mid of milestoneIds) {
+    const milestone = MILESTONES.find(m => m.id === mid);
+    if (!milestone) continue;
+    state.achievedMilestoneIds.push(mid);
+    if (milestone.rewardEffects?.resources) {
+      applyResourceDeltas(state.resources, milestone.rewardEffects.resources);
+    }
+    if (milestone.rewardEffects?.rivalPower) {
+      state.rival.power = clamp(state.rival.power + milestone.rewardEffects.rivalPower, 0, 100);
+    }
+    if (milestone.rewardPolicyId && !state.unlockedPolicyIds.includes(milestone.rewardPolicyId)) {
+      state.unlockedPolicyIds.push(milestone.rewardPolicyId);
+    }
+  }
 
   // Check win/loss
   const ending = checkWinLossConditions(state);
@@ -676,16 +770,40 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const state = deepClone(get()) as GameState;
     if (state.currentEvent) {
       if (state.currentEvent.choices && choiceId) {
+        const choice = state.currentEvent.choices.find(c => c.id === choiceId);
         resolveEvent(state, state.currentEvent, choiceId);
         if (state.currentEvent.oneShot && !state.firedEventIds.includes(state.currentEvent.id)) {
           state.firedEventIds.push(state.currentEvent.id);
         }
+        // Set pending outcome for outcome card display
+        if (choice) {
+          const outcomeText = choice.outcomeText || randomChoice(GENERIC_OUTCOME_TEXTS);
+          state.pendingOutcome = { choiceLabel: choice.label, text: outcomeText };
+        }
       }
-      // Auto-resolved events were already resolved in startNewsPhase
+      // Auto-resolved events were already resolved in startNewsPhase (no outcome card)
     }
     state.currentEvent = null;
+    // Stay in news phase if outcome is pending; otherwise advance
+    if (!state.pendingOutcome) {
+      state.phase = 'action';
+    }
+    set(state);
+  },
+
+  dismissOutcome: () => {
+    const state = deepClone(get()) as GameState;
+    state.pendingOutcome = null;
     state.phase = 'action';
     set(state);
+  },
+
+  dismissMilestoneReward: () => {
+    set({ pendingMilestoneReward: null });
+  },
+
+  dismissDispatch: () => {
+    set({ showDispatch: false });
   },
 
   submitActions: (actions: ActionChoice[]) => {
@@ -726,7 +844,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   saveGame: () => {
-    const { initGame, resetToMenu, setSkipBriefings, gameStarted, processFullTurn, advancePhase, getState, startNewsPhase, resolveCurrentEvent, submitActions, dismissBriefing, dismissDayOneBriefing, saveGame, loadGame, hasSavedGame, deleteSave, ...state } = get();
+    const { initGame, resetToMenu, setSkipBriefings, gameStarted, processFullTurn, advancePhase, getState, startNewsPhase, resolveCurrentEvent, dismissOutcome, dismissMilestoneReward, dismissDispatch, submitActions, dismissBriefing, dismissDayOneBriefing, saveGame, loadGame, hasSavedGame, deleteSave, ...state } = get();
     // Replace currentEvent with its ID for serialization (condition functions aren't serializable)
     const serializable = {
       ...state,
@@ -768,6 +886,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
       if (saved.showBriefing === undefined) saved.showBriefing = false;
       if (saved.showDayOneBriefing === undefined) saved.showDayOneBriefing = false;
       if (saved.skipBriefings === undefined) saved.skipBriefings = false;
+      // New field migrations
+      if (!saved.seenPositiveTriggers) saved.seenPositiveTriggers = [];
+      if (!saved.eventCooldowns) saved.eventCooldowns = {};
+      if (saved.pendingOutcome === undefined) saved.pendingOutcome = null;
+      if (!saved.achievedMilestoneIds) saved.achievedMilestoneIds = [];
+      if (saved.pendingMilestoneReward === undefined) saved.pendingMilestoneReward = null;
+      if (saved.policiesEnactedCount === undefined) saved.policiesEnactedCount = 0;
+      if (saved.showDispatch === undefined) saved.showDispatch = false;
       set({ ...(saved as GameState), gameStarted: true });
       return true;
     } catch {
@@ -792,7 +918,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   getState: () => {
-    const { initGame, resetToMenu, setSkipBriefings, gameStarted, processFullTurn, advancePhase, getState, startNewsPhase, resolveCurrentEvent, submitActions, dismissBriefing, dismissDayOneBriefing, saveGame, loadGame, hasSavedGame, deleteSave, ...state } = get();
+    const { initGame, resetToMenu, setSkipBriefings, gameStarted, processFullTurn, advancePhase, getState, startNewsPhase, resolveCurrentEvent, dismissOutcome, dismissMilestoneReward, dismissDispatch, submitActions, dismissBriefing, dismissDayOneBriefing, saveGame, loadGame, hasSavedGame, deleteSave, ...state } = get();
     return state as GameState;
   },
 }));

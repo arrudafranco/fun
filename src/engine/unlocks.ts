@@ -39,6 +39,9 @@ function isConditionMet(cond: UnlockCondition, state: GameState): boolean {
     case 'event':
       return cond.eventId !== undefined && state.firedEventIds.includes(cond.eventId);
 
+    case 'milestone':
+      return cond.milestoneId !== undefined && state.achievedMilestoneIds.includes(cond.milestoneId);
+
     default:
       return false;
   }

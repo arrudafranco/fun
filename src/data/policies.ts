@@ -1150,4 +1150,123 @@ export const POLICIES: Policy[] = [
       centralBankIndependence: -10,
     },
   },
+
+  // === MILESTONE-EXCLUSIVE POLICIES ===
+  {
+    id: 'international_summit',
+    name: 'International Summit',
+    tooltip: 'Host a summit of world leaders in Miranda. The prestige alone is worth the catering bill.',
+    category: 'diplomatic',
+    minPolarization: 0,
+    maxPolarization: 80,
+    capitalCost: 80,
+    centrist: true,
+    unlockCondition: { type: 'milestone', milestoneId: 'miranda_model', hint: 'Achieve "The Miranda Model" milestone to unlock this policy.' },
+    effects: {
+      blocs: {
+        academy: { loyalty: +5 },
+        media:   { loyalty: +5 },
+      },
+      resources: {
+        legitimacy: +15,
+        narrative: +10,
+      },
+      rivalPower: -5,
+    },
+  },
+  {
+    id: 'universal_basic_income',
+    name: 'Universal Basic Income',
+    tooltip: 'Give everyone money. Economists argue about it. Citizens spend it.',
+    category: 'social',
+    minPolarization: 0,
+    maxPolarization: 80,
+    capitalCost: 60,
+    centrist: false,
+    unlockCondition: { type: 'milestone', milestoneId: 'full_employment', hint: 'Achieve "Full Employment" milestone to unlock this policy.' },
+    effects: {
+      blocs: {
+        labor:      { loyalty: +10 },
+        mainStreet: { loyalty: +10 },
+        finance:    { loyalty: -10 },
+      },
+      resources: {
+        mobilization: +15,
+        inflation: +3,
+      },
+      delayed: {
+        turns: 4,
+        perTurn: { mobilization: +2 },
+      },
+    },
+  },
+  {
+    id: 'sovereign_investment_fund',
+    name: 'Sovereign Investment Fund',
+    tooltip: 'Invest nationally. Returns guaranteed (by optimism and creative accounting).',
+    category: 'economic',
+    minPolarization: 0,
+    maxPolarization: 70,
+    capitalCost: 100,
+    centrist: true,
+    unlockCondition: { type: 'milestone', milestoneId: 'economic_tiger', hint: 'Achieve "Economic Tiger" milestone to unlock this policy.' },
+    effects: {
+      blocs: {
+        finance: { loyalty: +10 },
+      },
+      resources: {},
+      delayed: {
+        turns: 6,
+        perTurn: { capital: +8 },
+        blocEffects: { finance: { loyalty: +1 } },
+      },
+    },
+  },
+  {
+    id: 'constitutional_convention',
+    name: 'Constitutional Convention',
+    tooltip: 'Rewrite the rules. All of them. With witnesses.',
+    category: 'institutional',
+    minPolarization: 0,
+    maxPolarization: 60,
+    capitalCost: 120,
+    centrist: true,
+    requiresMajority: true,
+    unlockCondition: { type: 'milestone', milestoneId: 'united_front', hint: 'Achieve "United Front" milestone to unlock this policy.' },
+    effects: {
+      blocs: {
+        court:   { loyalty: +10 },
+        academy: { loyalty: +10 },
+      },
+      resources: {
+        legitimacy: +20,
+        narrative: +10,
+        polarization: -10,
+      },
+    },
+  },
+  {
+    id: 'trade_independence',
+    name: 'Trade Independence',
+    tooltip: 'Diversify trade away from the Colossus. It takes time, but the returns are sovereignty.',
+    category: 'diplomatic',
+    minPolarization: 0,
+    maxPolarization: 80,
+    capitalCost: 70,
+    centrist: true,
+    unlockCondition: { type: 'milestone', milestoneId: 'colossus_whisperer', hint: 'Achieve "Colossus Whisperer" milestone to unlock this policy.' },
+    effects: {
+      blocs: {
+        industry: { loyalty: +5 },
+        labor:    { loyalty: +5 },
+      },
+      resources: {
+        colossusAlignment: -15,
+      },
+      delayed: {
+        turns: 8,
+        perTurn: { capital: +3 },
+      },
+    },
+  },
 ];
