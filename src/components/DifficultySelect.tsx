@@ -52,7 +52,7 @@ export default function DifficultySelect({ onSelect }: Props) {
   };
   return (
     <div
-      className="min-h-screen bg-slate-900 flex flex-col items-center justify-center px-4"
+      className="h-dvh bg-slate-900 flex flex-col items-center justify-center px-4 overflow-y-auto"
       role="main"
       aria-label="Difficulty selection"
     >

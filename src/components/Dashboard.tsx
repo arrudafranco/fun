@@ -122,7 +122,7 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="h-dvh flex flex-col bg-slate-950 text-slate-100 scanlines">
+    <div className="h-dvh flex flex-col bg-slate-950 text-slate-100 scanlines overflow-hidden">
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:top-2 focus:left-2 focus:px-4 focus:py-2 focus:bg-cyan-700 focus:text-white focus:rounded">
         Skip to main content
       </a>

@@ -1,7 +1,9 @@
 @import "tailwindcss";
 
-/* Prevent white flash on overscroll / behind viewport */
-html, body {
+/* Prevent page-level scrolling; app uses h-dvh with internal scroll */
+html, body, #root {
+  overflow: hidden;
+  height: 100dvh;
   background-color: #020617; /* slate-950 */
 }
 

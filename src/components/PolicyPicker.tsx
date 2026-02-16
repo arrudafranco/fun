@@ -325,11 +325,12 @@ export default function PolicyPicker() {
     </div>
   ) : null;
 
-  // Desktop: End Turn in header area; header right includes toggle, locked toggle, and End Turn
+  // Desktop: End Turn in header area; toggles grouped left, End Turn visually separated
   const desktopHeaderRight = !isMobile ? (
     <>
       {lockedToggle}
       {viewToggle}
+      <div className="w-px h-5 bg-slate-600/50 mx-1" aria-hidden="true" />
       <button onClick={handleEndTurn} className={endTurnButtonClass}>
         {endTurnButtonText}
       </button>

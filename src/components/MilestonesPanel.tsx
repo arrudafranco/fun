@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useGameStore } from '../hooks/useGameStore';
 import { MILESTONES } from '../data/milestones';
 import { getConditionProgress } from '../engine/milestones';
@@ -11,6 +12,9 @@ const CATEGORY_ICONS: Record<string, string> = {
   military: '⚔️',
 };
 
+const MILESTONE_VIEW_KEY = 'miranda-milestone-view';
+type MilestoneViewMode = 'detail' | 'overview';
+
 interface MilestonesPanelProps {
   bare?: boolean;
 }
@@ -19,13 +23,64 @@ export default function MilestonesPanel({ bare }: MilestonesPanelProps) {
   const state = useGameStore(s => s);
   const achieved = state.achievedMilestoneIds ?? [];
 
+  const [viewMode, setViewMode] = useState<MilestoneViewMode>(() => {
+    try {
+      const stored = localStorage.getItem(MILESTONE_VIEW_KEY);
+      if (stored === 'overview' || stored === 'detail') return stored;
+    } catch { /* ignore */ }
+    return 'detail';
+  });
+
+  useEffect(() => {
+    try { localStorage.setItem(MILESTONE_VIEW_KEY, viewMode); } catch { /* ignore */ }
+  }, [viewMode]);
+
   const visibleMilestones = MILESTONES.filter(m => !m.hidden || achieved.includes(m.id));
   const hiddenCount = MILESTONES.filter(m => m.hidden && !achieved.includes(m.id)).length;
 
   const achievedList = visibleMilestones.filter(m => achieved.includes(m.id));
   const pendingList = visibleMilestones.filter(m => !achieved.includes(m.id));
 
-  const content = (
+  const overviewContent = (
+    <div data-tutorial="milestones" className="mx-4 mb-4">
+      <table className="w-full text-xs">
+        <thead>
+          <tr className="text-slate-500 text-left">
+            <th className="pb-1 font-medium w-6"></th>
+            <th className="pb-1 font-medium">Milestone</th>
+            <th className="pb-1 font-medium text-right pr-1">Progress</th>
+          </tr>
+        </thead>
+        <tbody>
+          {[...achievedList, ...pendingList].map(m => {
+            const isAchieved = achieved.includes(m.id);
+            const progress = isAchieved ? [] : getConditionProgress(m, state);
+            const metCount = isAchieved ? m.conditions.length : progress.filter(Boolean).length;
+            const icon = CATEGORY_ICONS[m.category] ?? '📋';
+            return (
+              <tr key={m.id} className={`border-t border-slate-700/30 ${isAchieved ? 'text-amber-300' : 'text-slate-300'}`}>
+                <td className="py-1.5 pr-1" aria-hidden="true">{icon}</td>
+                <td className="py-1.5 truncate max-w-0">
+                  {m.name}
+                  {isAchieved && <span className="text-amber-400 ml-1" aria-label="Achieved">&#10003;</span>}
+                </td>
+                <td className={`py-1.5 text-right pr-1 tabular-nums ${isAchieved ? 'text-amber-400' : metCount === m.conditions.length ? 'text-emerald-400' : 'text-slate-500'}`}>
+                  {metCount}/{m.conditions.length}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      {hiddenCount > 0 && (
+        <p className="text-xs text-slate-500 italic mt-2">
+          {hiddenCount} hidden milestone{hiddenCount > 1 ? 's' : ''} remain...
+        </p>
+      )}
+    </div>
+  );
+
+  const detailContent = (
     <div data-tutorial="milestones" className="space-y-3 mx-4 mb-4">
       {achievedList.length > 0 && (
         <div className="space-y-2">
@@ -60,6 +115,33 @@ export default function MilestonesPanel({ bare }: MilestonesPanelProps) {
     </div>
   );
 
+  const content = viewMode === 'overview' ? overviewContent : detailContent;
+
+  const viewToggle = (
+    <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-0.5" role="radiogroup" aria-label="Milestone view mode">
+      <button
+        role="radio"
+        aria-checked={viewMode === 'overview'}
+        onClick={() => setViewMode('overview')}
+        className={`px-2.5 py-1 text-[10px] font-medium rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 ${
+          viewMode === 'overview' ? 'bg-slate-700 text-cyan-300' : 'text-slate-500 hover:text-slate-300'
+        }`}
+      >
+        Overview
+      </button>
+      <button
+        role="radio"
+        aria-checked={viewMode === 'detail'}
+        onClick={() => setViewMode('detail')}
+        className={`px-2.5 py-1 text-[10px] font-medium rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 ${
+          viewMode === 'detail' ? 'bg-slate-700 text-cyan-300' : 'text-slate-500 hover:text-slate-300'
+        }`}
+      >
+        Detail
+      </button>
+    </div>
+  );
+
   if (bare) {
     return (
       <section>
@@ -72,7 +154,7 @@ export default function MilestonesPanel({ bare }: MilestonesPanelProps) {
   }
 
   return (
-    <CollapsibleSection id="milestones" title="Milestones">
+    <CollapsibleSection id="milestones" title="Milestones" headerRight={viewToggle}>
       {content}
     </CollapsibleSection>
   );
