@@ -1,6 +1,7 @@
 import { useRef, useCallback } from 'react';
 import { useGameStore } from '../hooks/useGameStore';
 import { useBreakpoint } from '../hooks/useBreakpoint';
+import { useInactivityGlow } from '../hooks/useInactivityGlow';
 import ResourceSidebar from './ResourceSidebar';
 import BlocGrid from './BlocGrid';
 import EventModal from './EventModal';
@@ -53,6 +54,9 @@ function DesktopHeader() {
   const turn = useGameStore(s => s.turn);
   const maxTurns = useGameStore(s => s.maxTurns);
   const phase = useGameStore(s => s.phase);
+  const submitActions = useGameStore(s => s.submitActions);
+  const pendingCount = useGameStore(s => s.pendingActions.length);
+  const glowing = useInactivityGlow(120_000);
 
   return (
     <header className="flex items-center justify-between px-6 py-3 bg-slate-900 border-b border-slate-700/50 flex-shrink-0">
@@ -60,11 +64,22 @@ function DesktopHeader() {
       <div className="flex items-center gap-4 text-sm text-slate-400">
         <HelpButton />
         <SaveControls />
-        <Tooltip text={PHASE_TIPS[phase] ?? ''}>
-          <span className={`px-2 py-0.5 rounded text-xs font-medium cursor-help ${phase === 'action' ? 'bg-cyan-800 text-cyan-200 animate-pulse' : 'bg-slate-800 text-cyan-400'}`}>
-            {PHASE_LABELS[phase] ?? phase}
-          </span>
-        </Tooltip>
+        {phase === 'action' ? (
+          <Tooltip text={`${pendingCount} of 2 policies selected. You can also end with fewer.`}>
+            <button
+              onClick={() => submitActions()}
+              className={`px-3 py-1 rounded text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 bg-amber-700 hover:bg-amber-600 text-white action-ready ${glowing ? 'end-turn-glow' : ''}`}
+            >
+              End Turn ({pendingCount}/2)
+            </button>
+          </Tooltip>
+        ) : (
+          <Tooltip text={PHASE_TIPS[phase] ?? ''}>
+            <span className="px-2 py-0.5 rounded text-xs font-medium cursor-help bg-slate-800 text-cyan-400">
+              {PHASE_LABELS[phase] ?? phase}
+            </span>
+          </Tooltip>
+        )}
         <Tooltip text="Each turn is one month of your four-year term.">
           <span className="cursor-help">Turn {turn}/{maxTurns}</span>
         </Tooltip>
@@ -78,15 +93,26 @@ function MobileHeader() {
   const turn = useGameStore(s => s.turn);
   const maxTurns = useGameStore(s => s.maxTurns);
   const phase = useGameStore(s => s.phase);
+  const submitActions = useGameStore(s => s.submitActions);
+  const pendingCount = useGameStore(s => s.pendingActions.length);
 
   return (
     <header className="flex items-center justify-between px-3 py-2 bg-slate-900 border-b border-slate-700/50 flex-shrink-0">
       <h1 className="text-sm font-bold tracking-wide font-pixel title-glow">MIRANDA</h1>
       <div className="flex items-center gap-2 text-xs text-slate-400">
         <HelpButton />
-        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${phase === 'action' ? 'bg-cyan-800 text-cyan-200 animate-pulse' : 'bg-slate-800 text-cyan-400'}`}>
-          {PHASE_LABELS[phase] ?? phase}
-        </span>
+        {phase === 'action' ? (
+          <button
+            onClick={() => submitActions()}
+            className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-700 hover:bg-amber-600 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 action-ready"
+          >
+            End Turn ({pendingCount}/2)
+          </button>
+        ) : (
+          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-cyan-400">
+            {PHASE_LABELS[phase] ?? phase}
+          </span>
+        )}
         <span>T{turn}/{maxTurns}</span>
       </div>
     </header>

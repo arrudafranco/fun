@@ -1429,15 +1429,19 @@ A "Hide Locked / Show Locked (N)" toggle button in the policy subtitle line (rig
 
 ---
 
-## End Turn Positioning and Glow
+## End Turn Positioning and Action Prominence
 
-**Desktop:** The End Turn button is right-aligned in the selection summary bar, opposite "X/2 selected, Y capital left". The header row contains only the Overview/Detail toggle, matching the alignment of Power Blocs and Milestones headers. The Show Locked toggle sits on the subtitle line below, right-aligned next to the instructional text.
+**Toolbar End Turn button.** During the action phase, the header toolbar replaces the phase label badge with an amber End Turn button showing "(X/2)" selection count (e.g., "End Turn (0/2)"). During non-action phases, the same position shows phase labels (News, Briefing, Congress, etc.) as cyan badges with tooltips. This means the End Turn button is always visible in the toolbar during the player's turn, regardless of scroll position or collapsed sections.
 
-**Mobile:** The End Turn button remains sticky at the bottom of the Actions tab for thumb reach.
+**Inline End Turn button.** A second End Turn button sits in the selection summary bar inside Choose Actions, right-aligned opposite "X/2 selected, Y capital left". Both buttons share the same pending actions via the Zustand store (`pendingActions`).
 
-**Inactivity glow:** After 120 seconds of no mouse/keyboard/touch activity, the End Turn button pulses with a cyan glow (`gentle-glow` keyframe animation). The glow resets on any interaction. Under `prefers-reduced-motion`, the glow is static (no animation).
+**Amber accent for action UI.** The Choose Actions section header uses `text-amber-400` instead of the default `text-slate-400`, distinguishing it from other collapsible sections (Power Blocs, Milestones, News Log). The amber color creates an "unread notifications" visual cue that guides players to the actionable area.
 
-**Design rationale:** Playtesting showed players sometimes forgot to end their turn or couldn't find the button after scrolling through policies. The glow provides a gentle nudge without being intrusive.
+**Mobile:** The End Turn button appears both in the header toolbar and as a sticky button at the bottom of the Actions tab for thumb reach.
+
+**Ambient glow.** The toolbar End Turn button has a subtle always-on amber glow (`action-ready` class) during the action phase. After 120 seconds of inactivity, this intensifies to a pulsing glow (`end-turn-glow` keyframe animation, `gentle-glow`). Under `prefers-reduced-motion`, both effects are disabled/static.
+
+**Design rationale:** The "(0/2)" count format communicates unused action capacity at a glance, creating urgency similar to unread notification badges. The dual-button approach ensures the End Turn action is always reachable (toolbar for quick access, inline for context). The amber accent differentiates "your turn to act" UI from informational sections, reducing the cognitive load of finding where to advance the game.
 
 ---
 
@@ -1532,8 +1536,10 @@ Non-oneShot events now have cooldown periods to prevent rapid repetition. Random
 - Ending data consolidated into src/data/endings.ts (shared by GameOverScreen and PresidentialDispatch)
 - New component: PresidentialDispatch
 - Milestones Overview/Detail toggle (consistent with Blocs and Policies sections)
-- End Turn button moved from header to selection summary bar for consistent toggle alignment
-- Show Locked toggle moved from header to subtitle line, End Turn and summary text opposite-aligned
+- Action prominence: toolbar End Turn button with "(0/2)" count, amber Choose Actions header, ambient glow
+- Toolbar phase indicator shows phase labels during non-action phases, End Turn button during action phase
+- Shared pendingActions state in Zustand store for synchronized toolbar and inline End Turn buttons
+- Tutorial spotlight scroll fix: auto-scrolls to off-screen targets before measuring position
 - 130 tests across 7 suites (15 new dispatch tests)
 
 ### v1.6 (February 2026)

@@ -32,6 +32,8 @@ const SAVE_KEY = 'miranda-save';
 
 export interface GameStore extends GameState {
   gameStarted: boolean;
+  pendingActions: ActionChoice[];
+  setPendingActions: (actions: ActionChoice[]) => void;
   initGame: (difficulty?: Difficulty) => void;
   resetToMenu: () => void;
   setSkipBriefings: (skip: boolean) => void;
@@ -43,7 +45,7 @@ export interface GameStore extends GameState {
   dismissOutcome: () => void;
   dismissMilestoneReward: () => void;
   dismissDispatch: () => void;
-  submitActions: (actions: ActionChoice[]) => void;
+  submitActions: (actions?: ActionChoice[]) => void;
   dismissBriefing: () => void;
   dismissDayOneBriefing: () => void;
   saveGame: () => void;
@@ -806,10 +808,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({ showDispatch: false });
   },
 
-  submitActions: (actions: ActionChoice[]) => {
+  pendingActions: [],
+  setPendingActions: (actions: ActionChoice[]) => set({ pendingActions: actions }),
+
+  submitActions: (actions?: ActionChoice[]) => {
+    const toSubmit = actions ?? get().pendingActions;
     const state = deepClone(get()) as GameState;
-    submitActionsImpl(state, actions);
-    set(state);
+    submitActionsImpl(state, toSubmit);
+    set({ ...state, pendingActions: [] });
     // Auto-save after turn resolves
     if (!state.gameOver) {
       get().saveGame();
@@ -844,7 +850,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   saveGame: () => {
-    const { initGame, resetToMenu, setSkipBriefings, gameStarted, processFullTurn, advancePhase, getState, startNewsPhase, resolveCurrentEvent, dismissOutcome, dismissMilestoneReward, dismissDispatch, submitActions, dismissBriefing, dismissDayOneBriefing, saveGame, loadGame, hasSavedGame, deleteSave, ...state } = get();
+    const { initGame, resetToMenu, setSkipBriefings, gameStarted, processFullTurn, advancePhase, getState, startNewsPhase, resolveCurrentEvent, dismissOutcome, dismissMilestoneReward, dismissDispatch, submitActions, dismissBriefing, dismissDayOneBriefing, saveGame, loadGame, hasSavedGame, deleteSave, pendingActions, setPendingActions, ...state } = get();
     // Replace currentEvent with its ID for serialization (condition functions aren't serializable)
     const serializable = {
       ...state,
@@ -918,7 +924,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   getState: () => {
-    const { initGame, resetToMenu, setSkipBriefings, gameStarted, processFullTurn, advancePhase, getState, startNewsPhase, resolveCurrentEvent, dismissOutcome, dismissMilestoneReward, dismissDispatch, submitActions, dismissBriefing, dismissDayOneBriefing, saveGame, loadGame, hasSavedGame, deleteSave, ...state } = get();
+    const { initGame, resetToMenu, setSkipBriefings, gameStarted, processFullTurn, advancePhase, getState, startNewsPhase, resolveCurrentEvent, dismissOutcome, dismissMilestoneReward, dismissDispatch, submitActions, dismissBriefing, dismissDayOneBriefing, saveGame, loadGame, hasSavedGame, deleteSave, pendingActions, setPendingActions, ...state } = get();
     return state as GameState;
   },
 }));

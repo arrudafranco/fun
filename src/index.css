@@ -111,10 +111,15 @@ html, body, #root {
   animation: spotlightPulse 2s ease-in-out infinite;
 }
 
-/* End Turn inactivity glow */
+/* End Turn ambient glow (always-on during action phase) */
+.action-ready {
+  box-shadow: 0 0 6px 1px rgba(217, 119, 6, 0.25);
+}
+
+/* End Turn inactivity glow (amber, intensifies after idle) */
 @keyframes gentle-glow {
-  0%, 100% { box-shadow: 0 0 8px 2px rgba(34, 211, 238, 0.3); }
-  50% { box-shadow: 0 0 16px 4px rgba(34, 211, 238, 0.6); }
+  0%, 100% { box-shadow: 0 0 8px 2px rgba(217, 119, 6, 0.4); }
+  50% { box-shadow: 0 0 18px 5px rgba(217, 119, 6, 0.7); }
 }
 
 .end-turn-glow {
@@ -134,7 +139,8 @@ html, body, #root {
 
 @media (prefers-reduced-motion: reduce) {
   .spotlight-pulse { animation: none; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.7); }
-  .end-turn-glow { animation: none; box-shadow: 0 0 8px 2px rgba(34, 211, 238, 0.4); }
+  .action-ready { box-shadow: none; }
+  .end-turn-glow { animation: none; box-shadow: 0 0 8px 2px rgba(217, 119, 6, 0.4); }
   .animate-narrative-flicker { animation: none; }
   .animate-slideUp { animation: none; }
   .animate-loyalty-pulse { animation: none; }

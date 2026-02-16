@@ -9,6 +9,8 @@ interface CollapsibleSectionProps {
   tutorialAttr?: string;
   /** Extra content rendered inline in the header row (right side, before chevron) */
   headerRight?: React.ReactNode;
+  /** Override header title color (default: text-slate-400) */
+  titleClass?: string;
 }
 
 const STORAGE_PREFIX = 'miranda-section-';
@@ -21,6 +23,7 @@ export default function CollapsibleSection({
   className = '',
   tutorialAttr,
   headerRight,
+  titleClass = 'text-slate-400',
 }: CollapsibleSectionProps) {
   const panelId = useId();
   const [collapsed, setCollapsed] = useState(() => {
@@ -55,7 +58,7 @@ export default function CollapsibleSection({
           >
             <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
           </svg>
-          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider font-pixel select-none">
+          <h2 className={`text-xs font-semibold uppercase tracking-wider font-pixel select-none ${titleClass}`}>
             {title}
           </h2>
         </button>

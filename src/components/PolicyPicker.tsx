@@ -64,6 +64,7 @@ export default function PolicyPicker() {
   const rival = useGameStore(s => s.rival);
   const friendlyMajority = useGameStore(s => s.congress.friendlyMajority);
   const submitActions = useGameStore(s => s.submitActions);
+  const setPendingActions = useGameStore(s => s.setPendingActions);
   const unlockedPolicyIds = useGameStore(s => s.unlockedPolicyIds);
   const newlyUnlockedPolicyIds = useGameStore(s => s.newlyUnlockedPolicyIds);
   const { isMobile } = useBreakpoint();
@@ -105,6 +106,11 @@ export default function PolicyPicker() {
       // ignore
     }
   }, [showLocked]);
+
+  // Sync local selection to store so toolbar End Turn can access it
+  useEffect(() => {
+    setPendingActions(selected);
+  }, [selected, setPendingActions]);
 
   // Calculate total committed capital
   const committedCapital = selected.reduce((sum, sel) => {
@@ -162,7 +168,7 @@ export default function PolicyPicker() {
   }
 
   function handleEndTurn() {
-    submitActions(selected);
+    submitActions();
     setSelected([]);
   }
 
@@ -251,8 +257,8 @@ export default function PolicyPicker() {
   const tabPanelId = 'policy-tabpanel';
   const remainingCapital = resources.capital - committedCapital;
 
-  const endTurnButtonText = `End Turn${selected.length > 0 ? ` (${selected.length})` : ''}`;
-  const endTurnButtonClass = `px-4 py-2.5 rounded-lg bg-cyan-700 hover:bg-cyan-600 text-white font-semibold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 ${glowing ? 'end-turn-glow' : ''}`;
+  const endTurnButtonText = `End Turn (${selected.length}/2)`;
+  const endTurnButtonClass = `px-4 py-2.5 rounded-lg bg-amber-700 hover:bg-amber-600 text-white font-semibold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 ${glowing ? 'end-turn-glow' : ''}`;
 
   // Selection summary bar (shared between mobile and desktop)
   const selectionSummary = (
@@ -488,6 +494,7 @@ export default function PolicyPicker() {
       title={`Choose Actions (${selected.length}/2)`}
       tutorialAttr="policies"
       headerRight={desktopHeaderRight}
+      titleClass="text-amber-400"
     >
       {policyContent}
     </CollapsibleSection>
