@@ -175,6 +175,14 @@ export default function BlocOverviewTable({ groups }: BlocOverviewTableProps) {
 
   return (
     <div role="table" aria-label="Bloc overview" className="w-full">
+      {/* Column headers */}
+      <div role="row" className="flex items-center gap-2 px-3 py-1 border-b border-slate-700/50">
+        <span role="columnheader" className="w-6" />
+        <span role="columnheader" className="text-[10px] text-slate-500 uppercase tracking-wider flex-1">Bloc</span>
+        <span role="columnheader" className="text-[10px] text-slate-500 uppercase tracking-wider w-8 text-right">Loy</span>
+        <span role="columnheader" className="text-[10px] text-slate-500 uppercase tracking-wider w-8 text-right">Pwr</span>
+        <span role="columnheader" className="w-4" />
+      </div>
       {groups.map(group => (
         <div key={group.label} role="rowgroup">
           {/* Group header */}

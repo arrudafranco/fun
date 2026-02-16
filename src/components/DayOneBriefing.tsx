@@ -1,7 +1,9 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useGameStore } from '../hooks/useGameStore';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import type { Difficulty } from '../types/game';
+
+const TUTORIAL_KEY = 'miranda-tutorial-seen';
 
 function getBriefingParagraphs(difficulty: Difficulty, rivalName: string, rivalTitle: string): string[] {
   if (difficulty === 'story') {
@@ -40,14 +42,32 @@ export default function DayOneBriefing() {
   const { isMobile } = useBreakpoint();
   const buttonRef = useRef<HTMLButtonElement>(null);
 
+  // Wait for the tutorial to finish before showing inauguration
+  const [tutorialDone, setTutorialDone] = useState(() => {
+    try { return !!localStorage.getItem(TUTORIAL_KEY); } catch { return true; }
+  });
+
   useEffect(() => {
-    if (showDayOneBriefing) {
+    if (tutorialDone) return;
+    // Poll for tutorial completion (set by TutorialOverlay on skip/finish)
+    const interval = setInterval(() => {
+      try {
+        if (localStorage.getItem(TUTORIAL_KEY)) {
+          setTutorialDone(true);
+        }
+      } catch { /* ignore */ }
+    }, 200);
+    return () => clearInterval(interval);
+  }, [tutorialDone]);
+
+  useEffect(() => {
+    if (showDayOneBriefing && tutorialDone) {
       const id = requestAnimationFrame(() => buttonRef.current?.focus());
       return () => cancelAnimationFrame(id);
     }
-  }, [showDayOneBriefing]);
+  }, [showDayOneBriefing, tutorialDone]);
 
-  if (!showDayOneBriefing) return null;
+  if (!showDayOneBriefing || !tutorialDone) return null;
 
   const paragraphs = getBriefingParagraphs(difficulty, rivalName, rivalTitle);
 

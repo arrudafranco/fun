@@ -121,8 +121,8 @@ export default function SidebarOverview() {
           aria-expanded={expandedPanel === 'cbi'}
           className="flex items-center gap-1.5 px-1 py-1 text-left hover:bg-slate-800/60 rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-inset"
         >
-          <span className="text-sm" aria-hidden="true">🏛</span>
-          <span className="text-[11px] text-teal-300 flex-1">CBI</span>
+          <span className="text-sm" aria-hidden="true">🏦</span>
+          <span className="text-[11px] text-teal-300 flex-1">Central Bank</span>
           <span className="text-[11px] text-teal-200 font-medium tabular-nums">{centralBankIndependence}</span>
         </button>
         <div className={`overflow-hidden transition-all duration-200 ${expandedPanel === 'cbi' ? 'max-h-24' : 'max-h-0'}`}>
@@ -140,7 +140,8 @@ export default function SidebarOverview() {
           className="flex items-center gap-1.5 px-1 py-1 text-left hover:bg-slate-800/60 rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-inset"
         >
           <span className="text-sm" aria-hidden="true">🌐</span>
-          <span className="text-[11px] text-violet-300 flex-1 truncate">
+          <span className="text-[11px] text-slate-400 shrink-0">Colossus</span>
+          <span className="text-[11px] text-violet-300 flex-1 text-right truncate">
             {colossus.alignment} align / {colossus.patience} pat
           </span>
         </button>
@@ -157,9 +158,10 @@ export default function SidebarOverview() {
           data-tutorial="congress"
           className="flex items-center gap-1.5 px-1 py-1 text-left hover:bg-slate-800/60 rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-inset"
         >
-          <span className="text-sm" aria-hidden="true">🏛</span>
-          <span className={`text-[11px] flex-1 ${congress.friendlyMajority ? 'text-green-400' : 'text-red-400'}`}>
-            {congress.friendlyMajority ? `${friendlyPct}% friendly` : `${friendlyPct}% no majority`}
+          <span className="text-sm" aria-hidden="true">🗳</span>
+          <span className="text-[11px] text-slate-400 shrink-0">Congress</span>
+          <span className={`text-[11px] flex-1 text-right ${congress.friendlyMajority ? 'text-green-400' : 'text-red-400'}`}>
+            {friendlyPct}%{congress.friendlyMajority ? '' : ' (no majority)'}
           </span>
         </button>
         <div className={`overflow-hidden transition-all duration-200 ${expandedPanel === 'congress' ? 'max-h-40' : 'max-h-0'}`}>

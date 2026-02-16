@@ -27,6 +27,14 @@ export default function PolicyOverviewTable({
 }: PolicyOverviewTableProps) {
   return (
     <div role="table" aria-label="Policy overview" className="w-full">
+      {/* Column headers */}
+      <div role="row" className="flex items-center gap-2 px-3 py-1 border-b border-slate-700/50">
+        <span role="columnheader" className="w-2" />
+        <span role="columnheader" className="text-[10px] text-slate-500 uppercase tracking-wider flex-1">Policy</span>
+        <span role="columnheader" className="text-[10px] text-slate-500 uppercase tracking-wider w-8 text-right">Cost</span>
+        <span role="columnheader" className="text-[10px] text-slate-500 uppercase tracking-wider hidden lg:block w-40">Effects</span>
+        <span role="columnheader" className="w-6" />
+      </div>
       {policies.map(policy => {
         const isLocked = !unlockedPolicyIds.includes(policy.id);
         const isSelected = selected.some(s => s.policyId === policy.id);
