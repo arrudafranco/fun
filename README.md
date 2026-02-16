@@ -2,7 +2,7 @@
 
 A political simulation game set in a fictional developing nation. Navigate four years as president, balancing competing factions, managing an economy under pressure, and surviving the machinations of your political rival.
 
-**[Play Now](https://arrudafranco.github.io/fun/)**
+**[Play Now](https://arrudafranco.github.io/miranda-republic/)**
 
 ![Miranda Republic gameplay screenshot](screenshot.png)
 
@@ -22,13 +22,13 @@ Miranda Republic is a turn-based strategy game where every policy decision rippl
 ## Local Development
 
 ```bash
-git clone https://github.com/arrudafranco/fun.git
-cd fun
+git clone https://github.com/arrudafranco/miranda-republic.git
+cd miranda-republic
 npm install
 npm run dev
 ```
 
-The game runs at `http://localhost:5173/fun/` by default.
+The game runs at `http://localhost:5173/miranda-republic/` by default.
 
 ## Project Structure
 
