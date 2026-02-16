@@ -1421,7 +1421,7 @@ On desktop, the three main content sections (Power Blocs, News Log, Choose Actio
 
 ## Locked Policy Toggle
 
-A "Hide Locked / Show Locked (N)" toggle button in the policy section header lets players filter out locked policies. State is persisted to `localStorage` (`miranda-show-locked`). The count of hidden policies is shown in the button text.
+A "Hide Locked / Show Locked (N)" toggle button in the policy subtitle line (right-aligned, next to "Select up to 2 policies...") lets players filter out locked policies. State is persisted to `localStorage` (`miranda-show-locked`). The count of hidden policies is shown in the button text.
 
 **Accessibility:** `aria-pressed` on the toggle button, sr-only count indicator for screen readers.
 
@@ -1431,7 +1431,7 @@ A "Hide Locked / Show Locked (N)" toggle button in the policy section header let
 
 ## End Turn Positioning and Glow
 
-**Desktop:** The End Turn button is positioned in the selection summary bar (below the Choose Actions header, next to "X/2 selected, Y capital left"). This keeps it visible without scrolling past all policies, while keeping the header row reserved for view toggles (Hide Locked, Overview/Detail) that align consistently across all collapsible sections.
+**Desktop:** The End Turn button is right-aligned in the selection summary bar, opposite "X/2 selected, Y capital left". The header row contains only the Overview/Detail toggle, matching the alignment of Power Blocs and Milestones headers. The Show Locked toggle sits on the subtitle line below, right-aligned next to the instructional text.
 
 **Mobile:** The End Turn button remains sticky at the bottom of the Actions tab for thumb reach.
 
@@ -1533,6 +1533,7 @@ Non-oneShot events now have cooldown periods to prevent rapid repetition. Random
 - New component: PresidentialDispatch
 - Milestones Overview/Detail toggle (consistent with Blocs and Policies sections)
 - End Turn button moved from header to selection summary bar for consistent toggle alignment
+- Show Locked toggle moved from header to subtitle line, End Turn and summary text opposite-aligned
 - 130 tests across 7 suites (15 new dispatch tests)
 
 ### v1.6 (February 2026)
