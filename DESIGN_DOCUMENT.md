@@ -8,36 +8,54 @@ This document describes all game mechanics, systems, and design rationale in det
 
 ## Table of Contents
 
+### Part I: Game Overview
 1. [Overview](#overview)
 2. [Turn Structure](#turn-structure)
-3. [Resources](#resources)
-4. [Political Blocs](#political-blocs)
-5. [Actions and Policies](#actions-and-policies)
-6. [The Rival](#the-rival)
-7. [The Colossus](#the-colossus)
-8. [Congress](#congress)
-9. [Narrative System](#narrative-system)
-10. [Labor Cohesion](#labor-cohesion)
-11. [Central Bank Independence](#central-bank-independence)
-12. [Polarization](#polarization)
-13. [Interaction Matrix (Ripple Effects)](#interaction-matrix-ripple-effects)
-14. [Discovery and Scandal](#discovery-and-scandal)
-15. [Events](#events)
-16. [Crisis Chains](#crisis-chains)
-17. [Win and Loss Conditions](#win-and-loss-conditions)
-18. [Difficulty Settings](#difficulty-settings)
-19. [Day One Briefing](#day-one-briefing)
-20. [Responsive Design](#responsive-design)
-21. [Design Rationale](#design-rationale)
-22. [Collapsible Sections](#collapsible-sections)
-23. [Locked Policy Toggle](#locked-policy-toggle)
-24. [End Turn Positioning and Glow](#end-turn-positioning-and-glow)
-25. [Briefing Positive Reinforcement](#briefing-positive-reinforcement)
-26. [Milestone System](#milestone-system)
-27. [Event Outcome Cards](#event-outcome-cards)
-28. [UI Visual Reinforcement](#ui-visual-reinforcement)
-29. [Event Cooldowns](#event-cooldowns)
-30. [Changelog](#changelog)
+3. [Difficulty Settings](#difficulty-settings)
+
+### Part II: Core Systems
+4. [Resources](#resources)
+5. [Political Blocs](#political-blocs)
+6. [Actions and Policies](#actions-and-policies)
+7. [Congress](#congress)
+8. [The Rival](#the-rival)
+9. [The Colossus](#the-colossus)
+
+### Part III: Secondary Systems
+10. [Narrative System](#narrative-system)
+11. [Labor Cohesion](#labor-cohesion)
+12. [Central Bank Independence](#central-bank-independence)
+13. [Polarization](#polarization)
+14. [Interaction Matrix (Ripple Effects)](#interaction-matrix-ripple-effects)
+15. [Discovery and Scandal](#discovery-and-scandal)
+16. [Milestone System](#milestone-system)
+
+### Part IV: Events
+17. [Events](#events)
+18. [Crisis Chains](#crisis-chains)
+
+### Part V: Endings
+19. [Win and Loss Conditions](#win-and-loss-conditions)
+20. [Presidential Dispatches](#presidential-dispatches)
+
+### Part VI: Narrative Presentation
+21. [Day One Briefing](#day-one-briefing)
+22. [Turn Briefing System](#turn-briefing-system)
+23. [Event Outcome Cards](#event-outcome-cards)
+
+### Part VII: UI and Responsive Design
+24. [Responsive Design](#responsive-design)
+25. [UI Systems](#ui-systems)
+
+### Part VIII: Design Philosophy
+26. [Design Rationale](#design-rationale)
+
+### Part IX: Changelog
+27. [Changelog](#changelog)
+
+---
+
+# Part I: Game Overview
 
 ---
 
@@ -74,6 +92,31 @@ Each turn proceeds through seven phases in order:
 6. **Narrative Phase** -- Narrative resource shifts based on cultural bloc loyalties.
 
 7. **End Phase** -- Labor cohesion streak processing, congressional legitimacy bonus/penalty (+1 with friendly majority, -1 without), end-phase loyalty threshold events, legitimacy decay shield (Story mode), and win/loss condition checks. If the game continues, the turn counter advances.
+
+---
+
+## Difficulty Settings
+
+Three difficulty levels affect starting conditions and ongoing mechanics.
+
+| Parameter | Story | Standard | Crisis |
+|---|---|---|---|
+| Rival growth multiplier | 0.15x | 1.0x | 1.5x |
+| Base capital income/turn | 10 | 5 | 3 |
+| Starting capital bonus | +80 | 0 | -30 |
+| Starting legitimacy bonus | +20 | 0 | -10 |
+| Legitimacy decay shield | 3/turn | 0 | 0 |
+| Coup dread threshold | 85 | 70 | 60 |
+
+**Story mode** is designed for exploring the narrative with minimal mechanical pressure. The rival barely grows, resources are abundant, and legitimacy is protected.
+
+**Standard mode** is the intended experience with meaningful challenge.
+
+**Crisis mode** is a harder variant where the rival grows 50% faster, resources are scarce, and coups trigger more easily.
+
+---
+
+# Part II: Core Systems
 
 ---
 
@@ -484,6 +527,29 @@ Policies with delayed effects create per-turn bonuses that tick for a set number
 
 ---
 
+## Congress
+
+Congress represents the legislative branch and affects policy costs and legitimacy.
+
+### Seat Shares
+
+Seat shares are proportional to each bloc's power, recalculated every turn. Two special cases:
+- **Underworld**: Power is multiplied by 0.3x for seat calculation (they operate outside formal politics).
+- **Unions**: Use "effective power" = `basePower * (0.5 + laborCohesion / 200)`. At cohesion 0, they operate at 50% effectiveness. At cohesion 100, they operate at 100%.
+
+### Friendly Majority
+
+Blocs with loyalty >= 50 are "friendly." If friendly blocs hold > 50% of total seat share, the player has a friendly majority.
+
+### Effects of Majority
+
+- **Policy cost modifier**: Legislative policies cost 0.85x with majority, 1.15x without. Rhetoric and backroom policies are unaffected.
+- **Legitimacy per turn**: +1 with majority, -1 without.
+- **Rival growth**: +1 when there is no majority.
+- **Policy access**: Constitutional Amendment and Electoral Reform require majority.
+
+---
+
 ## The Rival
 
 A procedurally generated political opponent with one of four backgrounds, each with distinct narrative flavor.
@@ -587,26 +653,7 @@ When patience drops below 20, the Colossus Pressure crisis chain triggers (see C
 
 ---
 
-## Congress
-
-Congress represents the legislative branch and affects policy costs and legitimacy.
-
-### Seat Shares
-
-Seat shares are proportional to each bloc's power, recalculated every turn. Two special cases:
-- **Underworld**: Power is multiplied by 0.3x for seat calculation (they operate outside formal politics).
-- **Unions**: Use "effective power" = `basePower * (0.5 + laborCohesion / 200)`. At cohesion 0, they operate at 50% effectiveness. At cohesion 100, they operate at 100%.
-
-### Friendly Majority
-
-Blocs with loyalty >= 50 are "friendly." If friendly blocs hold > 50% of total seat share, the player has a friendly majority.
-
-### Effects of Majority
-
-- **Policy cost modifier**: Legislative policies cost 0.85x with majority, 1.15x without. Rhetoric and backroom policies are unaffected.
-- **Legitimacy per turn**: +1 with majority, -1 without.
-- **Rival growth**: +1 when there is no majority.
-- **Policy access**: Constitutional Amendment and Electoral Reform require majority.
+# Part III: Secondary Systems
 
 ---
 
@@ -774,6 +821,31 @@ Having any pending discoveries is one of the trigger conditions for the Media Sc
 
 ---
 
+## Milestone System
+
+Milestones are aspirational goals that give players something to work toward beyond survival. 9 milestones exist (5 visible, 4 hidden). Each has conditions tracked via a checklist UI.
+
+**Visible milestones.** The Miranda Model (governance), Full Employment (economy), The Peacemaker (social), Economic Tiger (economy), United Front (governance).
+
+**Hidden milestones.** The Puppet Master (3+ delayed effects), Against All Odds (survive to turn 24 on crisis), The Reformer (30+ policies enacted), Colossus Whisperer (high patience, low alignment).
+
+**Rewards.** Each milestone grants one of three reward types:
+- `policy_unlock` ... unlocks a milestone-exclusive policy (International Summit, Universal Basic Income, Sovereign Investment Fund, Constitutional Convention, Trade Independence)
+- `mechanical` ... direct resource bonuses (e.g., +10 legitimacy)
+- `narrative` ... smaller bonuses with narrative flavor text
+
+**Design rationale.** Milestones address the "no aspirational goals" problem. Players previously had no reason to optimize beyond survival. Milestone-exclusive policies create a "carrot" that encourages specific playstyles (peacemaker, economic powerhouse, broad coalition). Hidden milestones reward emergent play patterns without telegraphing them. The condition checklist provides transparent progress tracking.
+
+**Engine.** `src/engine/milestones.ts` evaluates 9 condition types (resource_above, resource_below, bloc_loyalty_above, all_blocs_above, rival_power_below, turn_reached, no_active_crises, congress_majority, custom). `checkMilestones()` runs after each turn's win/loss check. Achieved milestones are stored in `state.achievedMilestoneIds`. A `MilestoneRewardCard` modal displays narrative reward text.
+
+**UI.** Desktop: CollapsibleSection in main content area between PolicyPicker and NewsLog. Mobile: dedicated "Goals" tab (5th tab in bottom nav). Achieved milestones shown with amber/gold styling at top. Hidden milestones show count ("N hidden milestones remain...").
+
+---
+
+# Part IV: Events
+
+---
+
 ## Events
 
 Events are narrative moments that introduce external pressures and player choices. There are 53 events in total (6 rival threshold, 1 resource threshold, 5 loyalty threshold, 26 random, and 15 crisis chain stage events).
@@ -796,6 +868,10 @@ Events are narrative moments that introduce external pressures and player choice
 ### Event Priority
 
 When multiple events are eligible in one turn: rival threshold events > loyalty threshold events > random events. Only one event fires per turn (plus any crisis chain events in the queue).
+
+### Event Cooldowns
+
+Non-oneShot events have cooldown periods to prevent rapid repetition. Random-triggered events have an 8-turn cooldown. Loyalty-threshold events have a 6-turn cooldown. Cooldowns stored in `state.eventCooldowns` (eventId to turn when cooldown expires).
 
 ### Rival Threshold Events (6, all one-shot)
 
@@ -1026,6 +1102,10 @@ Crisis chains are multi-stage escalating emergencies that unfold over consecutiv
 
 ---
 
+# Part V: Endings
+
+---
+
 ## Win and Loss Conditions
 
 ### Immediate Loss Conditions (checked every turn)
@@ -1053,7 +1133,7 @@ Crisis chains are multi-stage escalating emergencies that unfold over consecutiv
 
 ---
 
-## Presidential Dispatches (Ending Epilogues)
+## Presidential Dispatches
 
 When the game ends, players see a **Presidential Dispatch** before the stats screen. This is a multi-paragraph narrative epilogue framed as the president's final communication from office. For good endings, it reads as a legacy statement. For losses, it becomes the last words from the desk before the end.
 
@@ -1093,24 +1173,7 @@ Some endings have variant paragraphs that only appear based on game state. For e
 
 ---
 
-## Difficulty Settings
-
-Three difficulty levels affect starting conditions and ongoing mechanics.
-
-| Parameter | Story | Standard | Crisis |
-|---|---|---|---|
-| Rival growth multiplier | 0.15x | 1.0x | 1.5x |
-| Base capital income/turn | 10 | 5 | 3 |
-| Starting capital bonus | +80 | 0 | -30 |
-| Starting legitimacy bonus | +20 | 0 | -10 |
-| Legitimacy decay shield | 3/turn | 0 | 0 |
-| Coup dread threshold | 85 | 70 | 60 |
-
-**Story mode** is designed for exploring the narrative with minimal mechanical pressure. The rival barely grows, resources are abundant, and legitimacy is protected.
-
-**Standard mode** is the intended experience with meaningful challenge.
-
-**Crisis mode** is a harder variant where the rival grows 50% faster, resources are scarce, and coups trigger more easily.
+# Part VI: Narrative Presentation
 
 ---
 
@@ -1149,6 +1212,83 @@ Dialog role, aria-modal, auto-focus on Begin button.
 
 ---
 
+## Turn Briefing System
+
+After the player ends their turn and all phases process, a narrative briefing overlay appears (if anything notable happened). The briefing consists of at most 3 short vignettes written in the game's dark whimsy voice, describing what happened as lived detail rather than mechanical summaries.
+
+### Briefing Item Types (by priority)
+
+1. **Rival actions** (priority 100) -- The rival's generated action text, always included if present
+2. **Crisis events** (priority 95) -- Active crisis chain developments
+3. **Discovery/scandal** (priority 90) -- Triggered when legitimacy drops >= 15 in one turn
+4. **Rival threshold crossings** (priority 85-88) -- When rival power crosses 30, 50, 75, or 85
+5. **Resource threshold crossings** (priority 70-82) -- Inflation crossing 10 or 18, Narrative dropping below 30 or rising above 60, Mobilization dropping below 20, Polarization crossing 60, Dread crossing 40, Legitimacy dropping below 30, Capital dropping below 20
+6. **Bloc loyalty milestones** (priority 60-65) -- All 14 blocs have flavor text for dropping below 25 or rising above 70
+7. **Colossus patience** (priority 55) -- Ambassador's patience below 30
+8. **Policy unlocks** (priority 50) -- New policies became available
+9. **Color vignettes** (priority 35) -- Atmospheric world-building snapshots (see below)
+
+### Color Vignettes
+
+A pool of 30 atmospheric vignettes that fire on quiet turns when fewer than 2 higher-priority items exist. These are pure world-building with no mechanical information. They paint Miranda as a lived-in place through palace life, city atmosphere, government bureaucracy, street life, seasonal weather, and dark whimsy. Examples: a filing clerk discovering a 1987 form, the presidential phone ringing at 3 AM (wrong number), jacaranda trees blooming in the government district.
+
+Color vignettes ensure there is always a visible turn transition, preventing the jarring effect of a quiet turn advancing immediately into the next event.
+
+### Positive Reinforcement
+
+The briefing system (`src/engine/briefing.ts`) addresses structural suppression of positive feedback. Crises and rival actions (priority 80-100) would always crowd out positive vignettes (priority 60-70) since only 3 items are shown per turn.
+
+**Positive trigger categories:**
+
+| Trigger | Condition | Priority | Examples |
+|---------|-----------|----------|----------|
+| Capital healthy | capital > 50 | 65 | Budget surplus, no apologies needed |
+| Citizens safe | dread < 20 | 62 | Night patrols normalized, no fear |
+| Unity | polarization < 30 | 62 | Joint editorials, handshakes after debates |
+| Popular support | mobilization > 70 | 65 | Rally overflow, volunteer surge |
+| Strong mandate | legitimacy > 75 | 68 | Historic approval, foreign admiration |
+| Rival retreating | rival.powerDelta <= -10 | 72 | Rally rescheduled, donors switching sides |
+
+**Positivity guarantee.** After the priority sort and top-3 selection, a rule fires: if all 3 selected items are negative/neutral AND at least one positive vignette was generated (but cut), the lowest-priority negative item is swapped for the highest-priority positive one. This ensures players who are doing well see at least one piece of good news per turn.
+
+**Tone tagging.** Every `BriefingItem` carries a `tone` field (`'positive' | 'negative' | 'neutral'`). This enables the positivity guarantee and could support future UI enhancements (e.g., color-coding briefing items).
+
+**Design rationale.** Intermittent positive reinforcement is essential for player retention, especially for new players learning when they're doing things right. The positivity guarantee ensures that good governance is recognized without eliminating the game's dark tone. Positive vignettes only fire when conditions genuinely merit them.
+
+### Behavior
+
+- Maximum 3 items shown per briefing (highest priority wins)
+- If fewer than 2 candidates exist, a color vignette is injected as a minimum transition
+- Auto-advances after 8 seconds with visible countdown
+- Dismissible via click, Enter, Escape, or Space
+- Items compare current state to `previousResources` (stored at start of turn processing)
+
+### Content Scale
+
+All briefing text is stored in module-level arrays with `randomChoice()` selection, ensuring variety across playthroughs. The pool contains ~125 unique vignettes across all categories. Each category has 2-4 variant texts to reduce repetition.
+
+### Tone
+
+The briefing text uses situationist detournement. It employs the language of institutional normalcy to reveal absurdity. The irony speaks for itself. No moralizing. The player draws their own conclusions. Each vignette builds a cumulative portrait of Miranda as a living place.
+
+---
+
+## Event Outcome Cards
+
+After choosing an event option, players now see an outcome card with narrative text describing the consequences of their choice. This addresses the "silent resolution" problem where event choices had no narrative payoff.
+
+**Authored outcomes.** ~12 high-impact event choices have handcrafted outcome text (both options for currency crisis, colossus trade offer, banking crisis, colossus ultimatum, etc.).
+
+**Generic outcomes.** Remaining choices draw from a pool of 8 generic outcome texts that maintain the game's wry political tone.
+
+**Engine flow.** `resolveCurrentEvent` sets `state.pendingOutcome` with choice label + text, stays in 'news' phase. EventModal shows the outcome card (amber accent line). `dismissOutcome` clears it and advances to 'action' phase. Auto-resolving events (no choices) skip the outcome card.
+
+---
+
+# Part VII: UI and Responsive Design
+
+---
+
 ## Responsive Design
 
 The game adapts to three viewport ranges using a `useBreakpoint` hook based on `matchMedia('(min-width: 768px)')`.
@@ -1182,7 +1322,7 @@ Uses the desktop sidebar layout. The sidebar width stays at `w-56` and the conte
 
 Full sidebar + main content layout. Bloc cards render in a responsive grid (up to 5 columns at wide viewports) with group section headers (State Power, Capital, Civil Society, Underworld). Cards have subtle hover lift effect (`hover:-translate-y-0.5`).
 
-### Save & Load
+### Save and Load
 
 The `SaveControls` component (in the desktop header toolbar and mobile Status tab) provides one-click game persistence via `localStorage` (key `miranda-save`). The system includes:
 
@@ -1201,7 +1341,7 @@ A `skipBriefings` toggle (stored in GameState, persists across saves) allows pla
 
 Tooltips support touch devices via long-press (500ms hold to show, release to dismiss). This is critical because hover tooltips don't exist on touch devices.
 
-### Design Rationale
+### Responsive Design Rationale
 
 Bottom tabs (not hamburger menu) because the game has 3-4 distinct content areas that need instant switching, resources are gameplay-critical and shouldn't be hidden, bottom tabs match the thumb zone, and game phases map naturally to tab highlighting.
 
@@ -1210,6 +1350,151 @@ CSS `hidden` class (not conditional rendering) for tab content because PolicyPic
 `100dvh` instead of `100vh` because mobile Safari's address bar changes viewport height, and `dvh` units account for this.
 
 No new dependencies added. Everything uses Tailwind utilities, CSS transitions, and vanilla React state.
+
+---
+
+## UI Systems
+
+### Turn Report Visual Design
+
+The turn report modal displays briefing items with visual hierarchy and labeled sections. A cyan gradient accent line runs across the top.
+
+**Rival section** appears at the top with the rival's name and title as a subheading (e.g., "Governor Fuentes, Regional Governor"), followed by their action text in amber italic. This section has a left amber border to distinguish it from other items.
+
+**Other items** are labeled by type with colored left borders:
+- `crisis` -> "Crisis Report" (red border)
+- `discovery` -> "Intelligence" (purple border)
+- `resource` -> "Field Report" (emerald border)
+- `bloc_shift` -> "Political Dispatch" (cyan border)
+- `unlock` -> "New Capability" (green border)
+- `color` -> no label, no border (atmospheric, labels would break the mood)
+
+The header reads "Turn Report, Month {turn}" to anchor the player in the timeline.
+
+### Policy Category Tabs
+
+The 46 policies are organized into 7 categories displayed as a horizontal tab bar above the policy grid. The "All" tab is selected by default. Each tab shows unlocked/total counts (e.g., "Economic (4/11)").
+
+**Categories:** All, Economic (11), Labor (5), Security (6), Diplomatic (4), Institutional (7), Rhetoric (7), Backroom (6).
+
+Within each category, policies are sorted: selected first, then newly unlocked ("New!" badge), then available (by ascending cost), then disabled, then locked.
+
+The tab bar follows the ARIA tablist pattern with arrow key navigation, Home/End keys, and proper focus management.
+
+### Resource Tooltips
+
+Each resource in the sidebar has a context-aware tooltip that explains its current gameplay impact using actual values from the game state. Examples:
+
+- **Inflation (6/30):** "Economic pain (6/30). Above 10, adds +2 rival growth per 5 points. Above 12, currency crisis can trigger."
+- **Polarization (25/100):** "Societal division (25/100). Currently no cost penalty. At 30+, centrist policies cost 25% more."
+- **Narrative (45/100):** "Control of the public story (45/100). Below 50, your rival grows faster."
+
+Tooltips update dynamically as values change. They teach mechanics through play rather than tutorials.
+
+### Resource Trend Arrows
+
+Small colored arrows next to each resource value show the direction of change from the previous turn. Green arrows indicate beneficial changes, red indicates harmful changes, gray indicates stability. For "negative" resources (polarization, inflation, dread), the color coding is inverted (increases are red). Screen readers announce trend descriptions via sr-only text.
+
+### Desktop View Modes (Overview/Detail Toggles)
+
+Each major desktop panel supports two view modes, toggled via radio buttons with localStorage persistence. Mobile uses its own compact modes and does not show these toggles.
+
+**Bloc Grid:** Overview mode shows a condensed table with emoji + name + color-coded loyalty + muted power per row, grouped by faction (State Power, Capital, Culture, Labor, Underworld). Click any row to expand an inline accordion with full loyalty/power bars and mood text. Detail mode shows the original full bloc cards. Trend arrows (from `prevBlocLoyalty` engine snapshot) show loyalty direction.
+
+**Policy Picker:** Overview mode shows a compact table with category dot + policy name + cost + up to 2 effect tags + checkbox. Click a policy name to open the PolicyDetailSheet for full details. Locked policies show as greyed rows with lock icon and hint. Detail mode shows the original full policy cards.
+
+**Resource Sidebar:** Compact mode replaces progress bars with a number grid (colored dot + abbreviated label + value) and collapses panels (CBI, Colossus, Congress, Rival) to single-line summaries. Click any collapsed panel to expand inline. Detail mode shows the original full sidebar.
+
+**Design rationale:** Playtesting revealed that the mobile-responsive compact modes were often more scannable than desktop's full cards. These toggles bring that information density to desktop while preserving the detailed view for players who prefer it. View preference persists across sessions via localStorage.
+
+### Bloc Grouping
+
+Blocs are organized into 5 groups reflecting materialist categories:
+- **State Power** (cyan border): Court, Generals, Enforcers
+- **Capital** (amber border): Banks, Factories, Big Tech, Landowners, Main Street
+- **Culture** (violet border): Heralds, Clergy, Scholars, Artists
+- **Labor** (sky border): Unions
+- **Underworld** (rose border): The Underworld
+
+Labor is intentionally separate from Culture. Unions operate on fundamentally different incentives (wages, working conditions, collective bargaining power) than cultural institutions (narrative, prestige, public opinion). Grouping them together would obscure meaningful gameplay distinctions.
+
+### Collapsible Sections
+
+On desktop, the three main content sections (Power Blocs, News Log, Choose Actions) are wrapped in a `CollapsibleSection` component. Each section has a clickable header with a chevron that rotates on collapse. Collapse state is persisted to `localStorage` (`miranda-section-{id}`).
+
+**Accessibility:** `aria-expanded` on the toggle button, `aria-controls` linking to the content region, sr-only expand/collapse text. The chevron rotation uses `transition-transform` which respects `prefers-reduced-motion`.
+
+**Mobile:** Collapsible sections are not used on mobile, which already separates content into bottom nav tabs.
+
+**Design rationale:** With 14 blocs, a news log, and up to 46 policies, the desktop layout required excessive scrolling. Collapsible sections let players hide sections they don't need, keeping the End Turn button visible. The default is all-expanded so new players see everything.
+
+### Locked Policy Toggle
+
+A "Hide Locked / Show Locked (N)" toggle button in the policy subtitle line (right-aligned, next to "Select up to 2 policies...") lets players filter out locked policies. State is persisted to `localStorage` (`miranda-show-locked`). The count of hidden policies is shown in the button text.
+
+**Accessibility:** `aria-pressed` on the toggle button, sr-only count indicator for screen readers.
+
+**Design rationale:** 28 locked policies at game start create visual clutter. Hiding them focuses attention on actionable options while preserving the ability to see what's coming (for players who want to plan ahead).
+
+### End Turn Positioning and Action Prominence
+
+**Toolbar End Turn button.** During the action phase, the header toolbar replaces the phase label badge with an amber End Turn button showing "(X/2)" selection count (e.g., "End Turn (0/2)"). During non-action phases, the same position shows phase labels (News, Briefing, Congress, etc.) as cyan badges with tooltips. This means the End Turn button is always visible in the toolbar during the player's turn, regardless of scroll position or collapsed sections.
+
+**Inline End Turn button.** A second End Turn button sits in the selection summary bar inside Choose Actions, right-aligned opposite "X/2 selected, Y capital left". Both buttons share the same pending actions via the Zustand store (`pendingActions`).
+
+**Amber accent for action UI.** The Choose Actions section header uses `text-amber-400` instead of the default `text-slate-400`, distinguishing it from other collapsible sections (Power Blocs, Milestones, News Log). The amber color creates an "unread notifications" visual cue that guides players to the actionable area.
+
+**Mobile:** The End Turn button appears both in the header toolbar and as a sticky button at the bottom of the Actions tab for thumb reach.
+
+**Ambient glow.** The toolbar End Turn button has a subtle always-on amber glow (`action-ready` class) during the action phase. After 120 seconds of inactivity, this intensifies to a pulsing glow (`end-turn-glow` keyframe animation, `gentle-glow`). Under `prefers-reduced-motion`, both effects are disabled/static.
+
+**Design rationale:** The "(0/2)" count format communicates unused action capacity at a glance, creating urgency similar to unread notification badges. The dual-button approach ensures the End Turn action is always reachable (toolbar for quick access, inline for context). The amber accent differentiates "your turn to act" UI from informational sections, reducing the cognitive load of finding where to advance the game.
+
+### UI Visual Reinforcement
+
+Six UI changes that communicate game state through visual cues.
+
+1. **News log tone tinting.** Headlines colored by tone: emerald (positive), rose (negative), slate (neutral).
+2. **Colossus bar color shift.** Alignment and patience bars shift from violet (healthy) to amber (warning) to rose (critical) at thresholds 40/20.
+3. **Resource bar dynamic coloring.** Each resource bar changes color based on its value. Positive resources (legitimacy, narrative, capital, mobilization) shift rose (danger) to amber (warning) to identity color (healthy). Negative resources (polarization, inflation, dread) shift identity (healthy) to amber (warning) to rose (danger). Specific thresholds per resource.
+4. **Bloc loyalty tier pulse.** When a bloc's loyalty crosses a tier boundary (30/60), its card briefly pulses with a cyan border glow. 1-second animation, disabled under prefers-reduced-motion.
+5. **Congress majority change pulse.** Same pulse animation when congressional majority status changes.
+6. **Rival dynamic glow.** Rival panel border opacity and bar glow intensity scale with rival power (faint at low power, intense at high power).
+
+**Design rationale.** Players reported not noticing when things were going well vs. badly. These visual changes provide ambient feedback without requiring text reading. The convergence toward rose for "bad" states creates unconscious alarm, while identity colors for "good" states maintain visual distinctiveness.
+
+### Modal Close Buttons
+
+All informational modals (those without player choices) have an X close button in the top-right corner. This follows standard UI design conventions and provides an additional dismiss affordance beyond the primary button and keyboard shortcuts.
+
+**Modals with X buttons:**
+- Turn Briefing (also dismissible via Continue, Escape, Enter, Space, backdrop click)
+- Day One Briefing (also dismissible via Begin, Escape)
+- Milestone Reward Card (also dismissible via Continue, Escape)
+- Presidential Dispatch (also dismissible via Continue to Report, Escape)
+- Event Outcome Card (also dismissible via Continue, Escape)
+
+**Modals without X buttons:**
+- Event Modal (choice stage) -- players must select an option; dismissal would skip the decision
+- Bloc Target Modal -- players must select a target bloc
+
+**Design rationale.** Informational modals benefit from an obvious close target, especially for players unfamiliar with keyboard shortcuts. Event choices are deliberately excluded because letting players dismiss them would bypass meaningful gameplay decisions.
+
+### Tutorial Spotlighting
+
+The tutorial overlay (accessible via the "?" button) highlights relevant UI elements using a box-shadow cutout technique. When a step has a spotlight target, a transparent div overlays the target element with `box-shadow: 0 0 0 9999px rgba(0,0,0,0.7)` to dim everything except the target. The tutorial card repositions itself to avoid overlapping (preferring below > right > above > left > centered fallback).
+
+On mobile, the tutorial auto-switches bottom nav tabs to show the relevant section (e.g., switching to the Status tab when explaining resources).
+
+Steps without a spotlight target (Welcome, Turn Reports) fall back to a centered modal with full dark backdrop. The Turn Reports step was changed from spotlighted to centered because the News Log sits at the bottom of the page and the box-shadow spotlight made the visible viewport tiny. The tutorial has 15 steps including Locked Policies, Collapsing Sections, Save & Load, and Milestones. A scroll listener (capture phase) keeps the spotlight position in sync when the user scrolls during the tutorial.
+
+**Single instance architecture.** Only one `TutorialOverlay` component exists in Dashboard. The Help button ("?") dispatches a `replay-tutorial` custom DOM event, which Dashboard listens for and sets `forceShow` on the single instance. This ensures consistent behavior (including mobile tab switching) whether it's a first-time tutorial or a replay.
+
+**Section expansion on tutorial open.** When the tutorial opens (first visit or replay), it dispatches a `tutorial-expand-sections` event. All `CollapsibleSection` components listen for this event and expand, ensuring spotlight targets are visible. On tutorial close, `main-content` scroll position resets to top.
+
+---
+
+# Part VIII: Design Philosophy
 
 ---
 
@@ -1303,260 +1588,7 @@ The endings collectively pose the question: "What does it mean to govern? And fo
 
 ---
 
-## Turn Briefing System
-
-After the player ends their turn and all phases process, a narrative briefing overlay appears (if anything notable happened). The briefing consists of at most 3 short vignettes written in the game's dark whimsy voice, describing what happened as lived detail rather than mechanical summaries.
-
-### Briefing Item Types (by priority)
-
-1. **Rival actions** (priority 100) -- The rival's generated action text, always included if present
-2. **Crisis events** (priority 95) -- Active crisis chain developments
-3. **Discovery/scandal** (priority 90) -- Triggered when legitimacy drops >= 15 in one turn
-4. **Rival threshold crossings** (priority 85-88) -- When rival power crosses 30, 50, 75, or 85
-5. **Resource threshold crossings** (priority 70-82) -- Inflation crossing 10 or 18, Narrative dropping below 30 or rising above 60, Mobilization dropping below 20, Polarization crossing 60, Dread crossing 40, Legitimacy dropping below 30, Capital dropping below 20
-6. **Bloc loyalty milestones** (priority 60-65) -- All 14 blocs have flavor text for dropping below 25 or rising above 70
-7. **Colossus patience** (priority 55) -- Ambassador's patience below 30
-8. **Policy unlocks** (priority 50) -- New policies became available
-9. **Color vignettes** (priority 35) -- Atmospheric world-building snapshots (see below)
-
-### Color Vignettes
-
-A pool of 30 atmospheric vignettes that fire on quiet turns when fewer than 2 higher-priority items exist. These are pure world-building with no mechanical information. They paint Miranda as a lived-in place through palace life, city atmosphere, government bureaucracy, street life, seasonal weather, and dark whimsy. Examples: a filing clerk discovering a 1987 form, the presidential phone ringing at 3 AM (wrong number), jacaranda trees blooming in the government district.
-
-Color vignettes ensure there is always a visible turn transition, preventing the jarring effect of a quiet turn advancing immediately into the next event.
-
-### Behavior
-
-- Maximum 3 items shown per briefing (highest priority wins)
-- If fewer than 2 candidates exist, a color vignette is injected as a minimum transition
-- Auto-advances after 8 seconds with visible countdown
-- Dismissible via click, Enter, Escape, or Space
-- Items compare current state to `previousResources` (stored at start of turn processing)
-
-### Content Scale
-
-All briefing text is stored in module-level arrays with `randomChoice()` selection, ensuring variety across playthroughs. The pool contains ~125 unique vignettes across all categories. Each category has 2-4 variant texts to reduce repetition.
-
-### Tone
-
-The briefing text uses situationist detournement. It employs the language of institutional normalcy to reveal absurdity. The irony speaks for itself. No moralizing. The player draws their own conclusions. Each vignette builds a cumulative portrait of Miranda as a living place.
-
----
-
-## UI Systems
-
-### Turn Report Visual Design
-
-The turn report modal displays briefing items with visual hierarchy and labeled sections. A cyan gradient accent line runs across the top.
-
-**Rival section** appears at the top with the rival's name and title as a subheading (e.g., "Governor Fuentes, Regional Governor"), followed by their action text in amber italic. This section has a left amber border to distinguish it from other items.
-
-**Other items** are labeled by type with colored left borders:
-- `crisis` -> "Crisis Report" (red border)
-- `discovery` -> "Intelligence" (purple border)
-- `resource` -> "Field Report" (emerald border)
-- `bloc_shift` -> "Political Dispatch" (cyan border)
-- `unlock` -> "New Capability" (green border)
-- `color` -> no label, no border (atmospheric, labels would break the mood)
-
-The header reads "Turn Report, Month {turn}" to anchor the player in the timeline.
-
-### Policy Category Tabs
-
-The 46 policies are organized into 7 categories displayed as a horizontal tab bar above the policy grid. The "All" tab is selected by default. Each tab shows unlocked/total counts (e.g., "Economic (4/11)").
-
-**Categories:** All, Economic (11), Labor (5), Security (6), Diplomatic (4), Institutional (7), Rhetoric (7), Backroom (6).
-
-Within each category, policies are sorted: selected first, then newly unlocked ("New!" badge), then available (by ascending cost), then disabled, then locked.
-
-The tab bar follows the ARIA tablist pattern with arrow key navigation, Home/End keys, and proper focus management.
-
-### Resource Tooltips
-
-Each resource in the sidebar has a context-aware tooltip that explains its current gameplay impact using actual values from the game state. Examples:
-
-- **Inflation (6/30):** "Economic pain (6/30). Above 10, adds +2 rival growth per 5 points. Above 12, currency crisis can trigger."
-- **Polarization (25/100):** "Societal division (25/100). Currently no cost penalty. At 30+, centrist policies cost 25% more."
-- **Narrative (45/100):** "Control of the public story (45/100). Below 50, your rival grows faster."
-
-Tooltips update dynamically as values change. They teach mechanics through play rather than tutorials.
-
-### Resource Trend Arrows
-
-Small colored arrows next to each resource value show the direction of change from the previous turn. Green arrows indicate beneficial changes, red indicates harmful changes, gray indicates stability. For "negative" resources (polarization, inflation, dread), the color coding is inverted (increases are red). Screen readers announce trend descriptions via sr-only text.
-
-### Desktop View Modes (Overview/Detail Toggles)
-
-Each major desktop panel supports two view modes, toggled via radio buttons with localStorage persistence. Mobile uses its own compact modes and does not show these toggles.
-
-**Bloc Grid:** Overview mode shows a condensed table with emoji + name + color-coded loyalty + muted power per row, grouped by faction (State Power, Capital, Culture, Labor, Underworld). Click any row to expand an inline accordion with full loyalty/power bars and mood text. Detail mode shows the original full bloc cards. Trend arrows (from `prevBlocLoyalty` engine snapshot) show loyalty direction.
-
-**Policy Picker:** Overview mode shows a compact table with category dot + policy name + cost + up to 2 effect tags + checkbox. Click a policy name to open the PolicyDetailSheet for full details. Locked policies show as greyed rows with lock icon and hint. Detail mode shows the original full policy cards.
-
-**Resource Sidebar:** Compact mode replaces progress bars with a number grid (colored dot + abbreviated label + value) and collapses panels (CBI, Colossus, Congress, Rival) to single-line summaries. Click any collapsed panel to expand inline. Detail mode shows the original full sidebar.
-
-**Design rationale:** Playtesting revealed that the mobile-responsive compact modes were often more scannable than desktop's full cards. These toggles bring that information density to desktop while preserving the detailed view for players who prefer it. View preference persists across sessions via localStorage.
-
-### Tutorial Spotlighting
-
-The tutorial overlay (accessible via the "?" button) highlights relevant UI elements using a box-shadow cutout technique. When a step has a spotlight target, a transparent div overlays the target element with `box-shadow: 0 0 0 9999px rgba(0,0,0,0.7)` to dim everything except the target. The tutorial card repositions itself to avoid overlapping (preferring below > right > above > left > centered fallback).
-
-On mobile, the tutorial auto-switches bottom nav tabs to show the relevant section (e.g., switching to the Status tab when explaining resources).
-
-Steps without a spotlight target (Welcome, Turn Reports) fall back to a centered modal with full dark backdrop. The Turn Reports step was changed from spotlighted to centered because the News Log sits at the bottom of the page and the box-shadow spotlight made the visible viewport tiny. The tutorial has 15 steps including Locked Policies, Collapsing Sections, Save & Load, and Milestones. A scroll listener (capture phase) keeps the spotlight position in sync when the user scrolls during the tutorial.
-
-**Single instance architecture.** Only one `TutorialOverlay` component exists in Dashboard. The Help button ("?") dispatches a `replay-tutorial` custom DOM event, which Dashboard listens for and sets `forceShow` on the single instance. This ensures consistent behavior (including mobile tab switching) whether it's a first-time tutorial or a replay.
-
-**Section expansion on tutorial open.** When the tutorial opens (first visit or replay), it dispatches a `tutorial-expand-sections` event. All `CollapsibleSection` components listen for this event and expand, ensuring spotlight targets are visible. On tutorial close, `main-content` scroll position resets to top.
-
-### Bloc Grouping
-
-Blocs are organized into 5 groups reflecting materialist categories:
-- **State Power** (cyan border): Court, Generals, Enforcers
-- **Capital** (amber border): Banks, Factories, Big Tech, Landowners, Main Street
-- **Culture** (violet border): Heralds, Clergy, Scholars, Artists
-- **Labor** (sky border): Unions
-- **Underworld** (rose border): The Underworld
-
-Labor is intentionally separate from Culture. Unions operate on fundamentally different incentives (wages, working conditions, collective bargaining power) than cultural institutions (narrative, prestige, public opinion). Grouping them together would obscure meaningful gameplay distinctions.
-
----
-
-## Collapsible Sections
-
-On desktop, the three main content sections (Power Blocs, News Log, Choose Actions) are wrapped in a `CollapsibleSection` component. Each section has a clickable header with a chevron that rotates on collapse. Collapse state is persisted to `localStorage` (`miranda-section-{id}`).
-
-**Accessibility:** `aria-expanded` on the toggle button, `aria-controls` linking to the content region, sr-only expand/collapse text. The chevron rotation uses `transition-transform` which respects `prefers-reduced-motion`.
-
-**Mobile:** Collapsible sections are not used on mobile, which already separates content into bottom nav tabs.
-
-**Design rationale:** With 14 blocs, a news log, and up to 46 policies, the desktop layout required excessive scrolling. Collapsible sections let players hide sections they don't need, keeping the End Turn button visible. The default is all-expanded so new players see everything.
-
----
-
-## Locked Policy Toggle
-
-A "Hide Locked / Show Locked (N)" toggle button in the policy subtitle line (right-aligned, next to "Select up to 2 policies...") lets players filter out locked policies. State is persisted to `localStorage` (`miranda-show-locked`). The count of hidden policies is shown in the button text.
-
-**Accessibility:** `aria-pressed` on the toggle button, sr-only count indicator for screen readers.
-
-**Design rationale:** 28 locked policies at game start create visual clutter. Hiding them focuses attention on actionable options while preserving the ability to see what's coming (for players who want to plan ahead).
-
----
-
-## End Turn Positioning and Action Prominence
-
-**Toolbar End Turn button.** During the action phase, the header toolbar replaces the phase label badge with an amber End Turn button showing "(X/2)" selection count (e.g., "End Turn (0/2)"). During non-action phases, the same position shows phase labels (News, Briefing, Congress, etc.) as cyan badges with tooltips. This means the End Turn button is always visible in the toolbar during the player's turn, regardless of scroll position or collapsed sections.
-
-**Inline End Turn button.** A second End Turn button sits in the selection summary bar inside Choose Actions, right-aligned opposite "X/2 selected, Y capital left". Both buttons share the same pending actions via the Zustand store (`pendingActions`).
-
-**Amber accent for action UI.** The Choose Actions section header uses `text-amber-400` instead of the default `text-slate-400`, distinguishing it from other collapsible sections (Power Blocs, Milestones, News Log). The amber color creates an "unread notifications" visual cue that guides players to the actionable area.
-
-**Mobile:** The End Turn button appears both in the header toolbar and as a sticky button at the bottom of the Actions tab for thumb reach.
-
-**Ambient glow.** The toolbar End Turn button has a subtle always-on amber glow (`action-ready` class) during the action phase. After 120 seconds of inactivity, this intensifies to a pulsing glow (`end-turn-glow` keyframe animation, `gentle-glow`). Under `prefers-reduced-motion`, both effects are disabled/static.
-
-**Design rationale:** The "(0/2)" count format communicates unused action capacity at a glance, creating urgency similar to unread notification badges. The dual-button approach ensures the End Turn action is always reachable (toolbar for quick access, inline for context). The amber accent differentiates "your turn to act" UI from informational sections, reducing the cognitive load of finding where to advance the game.
-
----
-
-## Briefing Positive Reinforcement
-
-The briefing system (`src/engine/briefing.ts`) was updated to address structural suppression of positive feedback. Previously, crises and rival actions (priority 80-100) would always crowd out positive vignettes (priority 60-70) since only 3 items are shown per turn.
-
-### New Positive Trigger Categories
-
-| Trigger | Condition | Priority | Examples |
-|---------|-----------|----------|----------|
-| Capital healthy | capital > 50 | 65 | Budget surplus, no apologies needed |
-| Citizens safe | dread < 20 | 62 | Night patrols normalized, no fear |
-| Unity | polarization < 30 | 62 | Joint editorials, handshakes after debates |
-| Popular support | mobilization > 70 | 65 | Rally overflow, volunteer surge |
-| Strong mandate | legitimacy > 75 | 68 | Historic approval, foreign admiration |
-| Rival retreating | rival.powerDelta <= -10 | 72 | Rally rescheduled, donors switching sides |
-
-### Positivity Guarantee
-
-After the priority sort and top-3 selection, a "positivity guarantee" rule fires: if all 3 selected items are negative/neutral AND at least one positive vignette was generated (but cut), the lowest-priority negative item is swapped for the highest-priority positive one. This ensures players who are doing well see at least one piece of good news per turn.
-
-### Tone Tagging
-
-Every `BriefingItem` now carries a `tone` field (`'positive' | 'negative' | 'neutral'`). This enables the positivity guarantee and could support future UI enhancements (e.g., color-coding briefing items).
-
-**Design rationale:** Intermittent positive reinforcement is essential for player retention, especially for new players learning when they're doing things right. The positivity guarantee ensures that good governance is recognized without eliminating the game's dark tone. Positive vignettes only fire when conditions genuinely merit them.
-
----
-
-## Milestone System
-
-Milestones are aspirational goals that give players something to work toward beyond survival. 9 milestones exist (5 visible, 4 hidden). Each has conditions tracked via a checklist UI.
-
-**Visible milestones.** The Miranda Model (governance), Full Employment (economy), The Peacemaker (social), Economic Tiger (economy), United Front (governance).
-
-**Hidden milestones.** The Puppet Master (3+ delayed effects), Against All Odds (survive to turn 24 on crisis), The Reformer (30+ policies enacted), Colossus Whisperer (high patience, low alignment).
-
-**Rewards.** Each milestone grants one of three reward types:
-- `policy_unlock` ... unlocks a milestone-exclusive policy (International Summit, Universal Basic Income, Sovereign Investment Fund, Constitutional Convention, Trade Independence)
-- `mechanical` ... direct resource bonuses (e.g., +10 legitimacy)
-- `narrative` ... smaller bonuses with narrative flavor text
-
-**Design rationale.** Milestones address the "no aspirational goals" problem. Players previously had no reason to optimize beyond survival. Milestone-exclusive policies create a "carrot" that encourages specific playstyles (peacemaker, economic powerhouse, broad coalition). Hidden milestones reward emergent play patterns without telegraphing them. The condition checklist provides transparent progress tracking.
-
-**Engine.** `src/engine/milestones.ts` evaluates 9 condition types (resource_above, resource_below, bloc_loyalty_above, all_blocs_above, rival_power_below, turn_reached, no_active_crises, congress_majority, custom). `checkMilestones()` runs after each turn's win/loss check. Achieved milestones are stored in `state.achievedMilestoneIds`. A `MilestoneRewardCard` modal displays narrative reward text.
-
-**UI.** Desktop: CollapsibleSection in main content area between PolicyPicker and NewsLog. Mobile: dedicated "Goals" tab (5th tab in bottom nav). Achieved milestones shown with amber/gold styling at top. Hidden milestones show count ("N hidden milestones remain...").
-
----
-
-## Event Outcome Cards
-
-After choosing an event option, players now see an outcome card with narrative text describing the consequences of their choice. This addresses the "silent resolution" problem where event choices had no narrative payoff.
-
-**Authored outcomes.** ~12 high-impact event choices have handcrafted outcome text (both options for currency crisis, colossus trade offer, banking crisis, colossus ultimatum, etc.).
-
-**Generic outcomes.** Remaining choices draw from a pool of 8 generic outcome texts that maintain the game's wry political tone.
-
-**Engine flow.** `resolveCurrentEvent` sets `state.pendingOutcome` with choice label + text, stays in 'news' phase. EventModal shows the outcome card (amber accent line). `dismissOutcome` clears it and advances to 'action' phase. Auto-resolving events (no choices) skip the outcome card.
-
----
-
-## Modal Close Buttons
-
-All informational modals (those without player choices) have an X close button in the top-right corner. This follows standard UI design conventions and provides an additional dismiss affordance beyond the primary button and keyboard shortcuts.
-
-**Modals with X buttons:**
-- Turn Briefing (also dismissible via Continue, Escape, Enter, Space, backdrop click)
-- Day One Briefing (also dismissible via Begin, Escape)
-- Milestone Reward Card (also dismissible via Continue, Escape)
-- Presidential Dispatch (also dismissible via Continue to Report, Escape)
-- Event Outcome Card (also dismissible via Continue, Escape)
-
-**Modals without X buttons:**
-- Event Modal (choice stage) -- players must select an option; dismissal would skip the decision
-- Bloc Target Modal -- players must select a target bloc
-
-**Design rationale.** Informational modals benefit from an obvious close target, especially for players unfamiliar with keyboard shortcuts. Event choices are deliberately excluded because letting players dismiss them would bypass meaningful gameplay decisions.
-
----
-
-## UI Visual Reinforcement
-
-Six UI changes that communicate game state through visual cues.
-
-1. **News log tone tinting.** Headlines colored by tone: emerald (positive), rose (negative), slate (neutral).
-2. **Colossus bar color shift.** Alignment and patience bars shift from violet (healthy) to amber (warning) to rose (critical) at thresholds 40/20.
-3. **Resource bar dynamic coloring.** Each resource bar changes color based on its value. Positive resources (legitimacy, narrative, capital, mobilization) shift rose (danger) to amber (warning) to identity color (healthy). Negative resources (polarization, inflation, dread) shift identity (healthy) to amber (warning) to rose (danger). Specific thresholds per resource.
-4. **Bloc loyalty tier pulse.** When a bloc's loyalty crosses a tier boundary (30/60), its card briefly pulses with a cyan border glow. 1-second animation, disabled under prefers-reduced-motion.
-5. **Congress majority change pulse.** Same pulse animation when congressional majority status changes.
-6. **Rival dynamic glow.** Rival panel border opacity and bar glow intensity scale with rival power (faint at low power, intense at high power).
-
-**Design rationale.** Players reported not noticing when things were going well vs. badly. These visual changes provide ambient feedback without requiring text reading. The convergence toward rose for "bad" states creates unconscious alarm, while identity colors for "good" states maintain visual distinctiveness.
-
----
-
-## Event Cooldowns
-
-Non-oneShot events now have cooldown periods to prevent rapid repetition. Random-triggered events have an 8-turn cooldown. Loyalty-threshold events have a 6-turn cooldown. Cooldowns stored in `state.eventCooldowns` (eventId to turn when cooldown expires).
+# Part IX: Changelog
 
 ---
 
