@@ -22,6 +22,16 @@ export const CATEGORY_BORDER: Record<string, string> = {
   institutional: 'border-l-amber-400',
 };
 
+export const CATEGORY_DOT: Record<string, string> = {
+  economic: 'bg-emerald-400',
+  labor: 'bg-sky-400',
+  backroom: 'bg-violet-400',
+  rhetoric: 'bg-orange-400',
+  security: 'bg-rose-400',
+  diplomatic: 'bg-teal-400',
+  institutional: 'bg-amber-400',
+};
+
 interface PolicyCardProps {
   policy: Policy;
   selected: boolean;
@@ -29,14 +39,20 @@ interface PolicyCardProps {
   disabledReason?: string | null;
   effectiveCost: number;
   onToggle: () => void;
+  onDetail?: () => void;
   locked?: boolean;
   lockHint?: string;
   isNew?: boolean;
+  compact?: boolean;
 }
 
-export default function PolicyCard({ policy, selected, disabled, disabledReason, effectiveCost, onToggle, locked, lockHint, isNew }: PolicyCardProps) {
+export default function PolicyCard({
+  policy, selected, disabled, disabledReason, effectiveCost,
+  onToggle, onDetail, locked, lockHint, isNew, compact,
+}: PolicyCardProps) {
   const colorClass = CATEGORY_COLORS[policy.category] ?? 'bg-slate-600 text-slate-200';
   const borderClass = CATEGORY_BORDER[policy.category] ?? 'border-l-slate-500';
+  const dotClass = CATEGORY_DOT[policy.category] ?? 'bg-slate-400';
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -45,7 +61,75 @@ export default function PolicyCard({ policy, selected, disabled, disabledReason,
     }
   }
 
-  // Locked policy card
+  // Compact mobile row
+  if (compact) {
+    if (locked) {
+      return (
+        <div
+          className="flex items-center gap-2 px-3 py-2.5 min-h-[44px] rounded-lg bg-slate-800/60 opacity-40 grayscale"
+          aria-label={`${policy.name}, locked`}
+        >
+          <span className={`w-2 h-2 rounded-full ${dotClass} shrink-0`} aria-hidden="true" />
+          <svg aria-hidden="true" className="w-3 h-3 text-slate-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+          <span className="text-sm text-slate-400 flex-1 truncate">{policy.name}</span>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        className={`flex items-center gap-2 px-3 py-2.5 min-h-[44px] rounded-lg transition-colors ${
+          selected ? 'bg-cyan-900/40 ring-1 ring-cyan-500/50' :
+          'bg-slate-800/60 hover:bg-slate-800'
+        } ${disabled ? 'opacity-60' : ''}`}
+      >
+        {/* Category dot */}
+        <span className={`w-2 h-2 rounded-full ${dotClass} shrink-0`} aria-hidden="true" />
+
+        {/* Name - tappable to open detail */}
+        <button
+          onClick={onDetail}
+          className="text-sm text-slate-200 flex-1 truncate text-left focus:outline-none focus-visible:underline"
+          aria-label={`View details for ${policy.name}`}
+        >
+          {policy.name}
+          {isNew && <span className="ml-1.5 text-[9px] text-cyan-400 font-bold uppercase">New</span>}
+        </button>
+
+        {/* Cost badge */}
+        <span className="text-xs text-slate-400 tabular-nums shrink-0">{effectiveCost}</span>
+
+        {/* Checkbox toggle */}
+        <button
+          onClick={(e) => { e.stopPropagation(); if (!disabled) onToggle(); }}
+          disabled={disabled && !selected}
+          className={`
+            w-6 h-6 rounded border-2 flex items-center justify-center shrink-0 transition-colors
+            focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500
+            ${selected
+              ? 'bg-cyan-600 border-cyan-500'
+              : disabled
+                ? 'border-slate-600 cursor-not-allowed'
+                : 'border-slate-500 hover:border-cyan-500'}
+          `}
+          aria-label={selected ? `Deselect ${policy.name}` : `Select ${policy.name}`}
+          aria-checked={selected}
+          role="checkbox"
+        >
+          {selected && (
+            <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
+              <path d="M5 12l5 5L19 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </button>
+      </div>
+    );
+  }
+
+  // Locked policy card (desktop)
   if (locked) {
     return (
       <Tooltip text={lockHint ?? 'Locked'}>

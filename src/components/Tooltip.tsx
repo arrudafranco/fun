@@ -12,6 +12,7 @@ export default function Tooltip({ text, children }: TooltipProps) {
   const [pos, setPos] = useState({ left: 0, top: 0 });
   const wrapperRef = useRef<HTMLDivElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleMouseEnter = useCallback((e: React.MouseEvent) => {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
@@ -21,6 +22,24 @@ export default function Tooltip({ text, children }: TooltipProps) {
 
   const handleMouseLeave = useCallback(() => {
     setVisible(false);
+  }, []);
+
+  // Touch device support: long-press to show tooltip
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setAnchor({ x: rect.left + rect.width / 2, y: rect.top, bottom: rect.bottom });
+    longPressTimer.current = setTimeout(() => {
+      setVisible(true);
+    }, 500);
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+    // Small delay so user can read it
+    setTimeout(() => setVisible(false), 150);
   }, []);
 
   // Clamp tooltip position to viewport after it renders and we know its size
@@ -52,6 +71,9 @@ export default function Tooltip({ text, children }: TooltipProps) {
       onMouseLeave={handleMouseLeave}
       onFocus={handleMouseEnter as unknown as React.FocusEventHandler}
       onBlur={handleMouseLeave as unknown as React.FocusEventHandler}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
     >
       {children}
       {visible && (

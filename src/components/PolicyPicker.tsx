@@ -1,11 +1,13 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useGameStore } from '../hooks/useGameStore';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 import { POLICIES } from '../data/policies';
 import { getPolarizationCostMultiplier } from '../engine/polarization';
 import { getCongressCostMultiplier } from '../engine/congress';
-import type { ActionChoice, ActionCategory } from '../types/actions';
+import type { ActionChoice, ActionCategory, Policy } from '../types/actions';
 import type { BlocId } from '../types/blocs';
 import PolicyCard from './PolicyCard';
+import PolicyDetailSheet from './PolicyDetailSheet';
 import BlocTargetModal from './BlocTargetModal';
 
 const CATEGORY_TAB_COLORS: Record<string, string> = {
@@ -57,10 +59,12 @@ export default function PolicyPicker() {
   const submitActions = useGameStore(s => s.submitActions);
   const unlockedPolicyIds = useGameStore(s => s.unlockedPolicyIds);
   const newlyUnlockedPolicyIds = useGameStore(s => s.newlyUnlockedPolicyIds);
+  const { isMobile } = useBreakpoint();
 
   const [selected, setSelected] = useState<ActionChoice[]>([]);
   const [pendingBlocPolicy, setPendingBlocPolicy] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<CategoryFilter>('all');
+  const [detailPolicy, setDetailPolicy] = useState<Policy | null>(null);
   const tabListRef = useRef<HTMLDivElement>(null);
 
   // Calculate total committed capital
@@ -200,6 +204,35 @@ export default function PolicyPicker() {
 
   const allTabs: CategoryFilter[] = ['all', ...CATEGORY_ORDER];
   const tabPanelId = 'policy-tabpanel';
+  const remainingCapital = resources.capital - committedCapital;
+
+  // Selection summary bar (shared between mobile and desktop)
+  const selectionSummary = (
+    <div className="flex items-center gap-2 flex-wrap">
+      {selected.map(sel => {
+        const p = POLICIES.find(pp => pp.id === sel.policyId);
+        if (!p) return null;
+        return (
+          <span
+            key={sel.policyId}
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-cyan-900/50 text-cyan-300 text-xs"
+          >
+            {p.name}
+            <button
+              onClick={() => setSelected(selected.filter(s => s.policyId !== sel.policyId))}
+              className="ml-0.5 text-cyan-400 hover:text-cyan-200 focus:outline-none"
+              aria-label={`Remove ${p.name}`}
+            >
+              &times;
+            </button>
+          </span>
+        );
+      })}
+      <span className="text-xs text-slate-400 ml-auto">
+        {selected.length}/2 selected, {remainingCapital} capital left
+      </span>
+    </div>
+  );
 
   return (
     <section aria-label="Policy selection">
@@ -207,9 +240,16 @@ export default function PolicyPicker() {
         <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-1 font-pixel">
           Choose Actions ({selected.length}/2)
         </h3>
-        <p className="text-xs text-slate-500 mb-3">
-          Select up to 2 policies, then end your turn. You can also skip by ending with no selections.
-        </p>
+        {!isMobile && (
+          <p className="text-xs text-slate-500 mb-3">
+            Select up to 2 policies, then end your turn. You can also skip by ending with no selections.
+          </p>
+        )}
+      </div>
+
+      {/* Selection summary bar */}
+      <div className="px-4 pb-2">
+        {selectionSummary}
       </div>
 
       {/* Category filter tabs */}
@@ -217,7 +257,7 @@ export default function PolicyPicker() {
         ref={tabListRef}
         role="tablist"
         aria-label="Policy categories"
-        className="flex gap-1 px-4 pb-3 overflow-x-auto"
+        className={`flex gap-1 px-4 pb-3 overflow-x-auto scrollbar-hide ${isMobile ? 'tab-fade-edges' : ''}`}
       >
         {allTabs.map((tab) => {
           const isActive = activeTab === tab;
@@ -243,17 +283,20 @@ export default function PolicyPicker() {
                   : 'border-transparent text-slate-500 hover:text-slate-300 hover:border-slate-600'}
               `}
             >
-              {tab === 'all' ? 'All' : CATEGORY_LABELS[tab]} ({count})
+              {tab === 'all' ? 'All' : CATEGORY_LABELS[tab]}{isMobile ? '' : ` (${count})`}
             </button>
           );
         })}
       </div>
 
+      {/* Policy list */}
       <div
         id={tabPanelId}
         role="tabpanel"
         aria-labelledby={`tab-${activeTab}`}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 px-4 pb-4"
+        className={isMobile
+          ? 'flex flex-col gap-1 px-3 pb-3'
+          : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 px-4 pb-4'}
       >
         {sortedPolicies.map(policy => {
           const isLocked = !unlockedPolicyIds.includes(policy.id);
@@ -268,6 +311,7 @@ export default function PolicyPicker() {
                 onToggle={() => {}}
                 locked={true}
                 lockHint={policy.unlockCondition?.hint}
+                compact={isMobile}
               />
             );
           }
@@ -286,13 +330,16 @@ export default function PolicyPicker() {
               disabledReason={disabledReason}
               effectiveCost={effectiveCost}
               onToggle={() => handleToggle(policy.id)}
+              onDetail={isMobile ? () => setDetailPolicy(policy) : undefined}
               isNew={newlyUnlockedPolicyIds.includes(policy.id)}
+              compact={isMobile}
             />
           );
         })}
       </div>
 
-      <div className="px-4 pb-4">
+      {/* End Turn button */}
+      <div className={`px-4 pb-4 ${isMobile ? 'sticky bottom-0 bg-slate-950/95 backdrop-blur-sm pt-2 border-t border-slate-700/30' : ''}`}>
         <button
           onClick={handleEndTurn}
           className="w-full px-4 py-3 rounded-lg bg-cyan-700 hover:bg-cyan-600 text-white font-semibold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500"
@@ -300,6 +347,31 @@ export default function PolicyPicker() {
           End Turn{selected.length > 0 ? ` (${selected.length} action${selected.length > 1 ? 's' : ''})` : ''}
         </button>
       </div>
+
+      {/* Policy detail bottom sheet (mobile) */}
+      {detailPolicy && (() => {
+        const isLocked = !unlockedPolicyIds.includes(detailPolicy.id);
+        const isSelected = selected.some(s => s.policyId === detailPolicy.id);
+        const disabledReason = isSelected ? null : (isPolicyDisabled(detailPolicy) ? getDisabledReason(detailPolicy) : null);
+        const isDisabled = !isSelected && (disabledReason !== null || selected.length >= 2);
+        const effectiveCost = computeEffectiveCost(
+          detailPolicy, resources.polarization, rival.gridlockCountdown, blocs.syndicate.loyalty, friendlyMajority
+        );
+        return (
+          <PolicyDetailSheet
+            policy={detailPolicy}
+            effectiveCost={effectiveCost}
+            selected={isSelected}
+            disabled={isDisabled}
+            disabledReason={disabledReason}
+            locked={isLocked}
+            lockHint={detailPolicy.unlockCondition?.hint}
+            isNew={newlyUnlockedPolicyIds.includes(detailPolicy.id)}
+            onToggle={() => handleToggle(detailPolicy.id)}
+            onClose={() => setDetailPolicy(null)}
+          />
+        );
+      })()}
 
       {pendingBlocPolicy && (() => {
         const p = POLICIES.find(pol => pol.id === pendingBlocPolicy);

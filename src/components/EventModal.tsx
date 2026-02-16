@@ -63,13 +63,15 @@ export default function EventModal() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="event-title"
       onKeyDown={handleKeyDown}
     >
-      <div ref={dialogRef} className="bg-slate-800 border border-slate-600 rounded-2xl shadow-2xl max-w-lg w-full mx-4 p-6">
+      <div ref={dialogRef} className="bg-slate-800 border border-slate-600 rounded-2xl shadow-2xl max-w-lg w-full mx-4 my-4 overflow-hidden shrink-0">
+        <div className="h-1 bg-gradient-to-r from-cyan-500 via-cyan-400 to-transparent" />
+        <div className="p-6">
         <h2
           id="event-title"
           className="text-xl font-bold text-cyan-400 mb-3"
@@ -103,6 +105,7 @@ export default function EventModal() {
             Continue
           </button>
         )}
+        </div>
       </div>
     </div>
   );

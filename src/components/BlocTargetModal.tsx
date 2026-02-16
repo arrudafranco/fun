@@ -46,12 +46,14 @@ export default function BlocTargetModal({ policyName, loyaltyBonus, onSelect, on
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="bloc-target-title"
     >
-      <div className="bg-slate-800 border border-slate-600 rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6">
+      <div className="bg-slate-800 border border-slate-600 rounded-2xl shadow-2xl max-w-md w-full mx-4 my-4 overflow-hidden shrink-0">
+        <div className="h-1 bg-gradient-to-r from-cyan-500 via-cyan-400 to-transparent" />
+        <div className="p-6">
         <h2 id="bloc-target-title" className="text-lg font-bold text-cyan-400 mb-1">
           {policyName ? policyName : 'Choose Target Bloc'}
         </h2>
@@ -79,6 +81,7 @@ export default function BlocTargetModal({ policyName, loyaltyBonus, onSelect, on
         >
           Cancel
         </button>
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 # Miranda Republic -- Game Mechanics Documentation
 
-*Last updated: v1.2 (February 2026)*
+*Last updated: v1.3 (February 2026)*
 
 This document describes all game mechanics, systems, and design rationale in detail. It is intended as a reference for development, balance tuning, and onboarding.
 
@@ -27,8 +27,9 @@ This document describes all game mechanics, systems, and design rationale in det
 17. [Win and Loss Conditions](#win-and-loss-conditions)
 18. [Difficulty Settings](#difficulty-settings)
 19. [Day One Briefing](#day-one-briefing)
-20. [Design Rationale](#design-rationale)
-21. [Changelog](#changelog)
+20. [Responsive Design](#responsive-design)
+21. [Design Rationale](#design-rationale)
+22. [Changelog](#changelog)
 
 ---
 
@@ -1082,7 +1083,11 @@ For returning players (tutorial already seen), the briefing shows immediately af
 
 ### Content
 
-3-4 paragraphs of dark whimsy narrative. The player has just arrived at the presidential desk. A mahogany desk, a telephone, briefing folders, and a pre-signed resignation letter from the predecessor. The chief of staff introduces the political landscape, referencing the rival by name and title (from game state), the fourteen factions, the Colossus, and the 48-month term. Ends with "The phone is ringing."
+3-4 paragraphs of dark whimsy narrative, varying by difficulty. The player has just arrived at the presidential desk. The chief of staff introduces the political landscape, referencing the rival by name and title (from game state), the fourteen factions, the Colossus, and the 48-month term.
+
+- **Story:** Relaxed tone. The desk is polished, the predecessor left a bottle of wine with an encouraging note. The chief of staff enters with a knock and a smile. The rival is mentioned casually. "You have time."
+- **Standard:** Neutral tension. Mahogany desk, pre-signed resignation letter. The chief of staff enters without knocking. The rival is organizing but not yet threatening. Ends with "The phone is ringing."
+- **Crisis:** Urgent, hostile tone. Cigarette-burned desk from a predecessor who didn't last four years. Three urgent briefing folders. The chief of staff enters already arguing on the phone. The rival has held two rallies this week. The Colossus ambassador called twice before breakfast. Ends with "Three phones are ringing. Nobody is answering them."
 
 ### Design Rationale
 
@@ -1093,6 +1098,59 @@ No auto-advance timer. This is a first-impression moment. No Escape key dismiss 
 ### Accessibility
 
 Dialog role, aria-modal, auto-focus on Begin button.
+
+---
+
+## Responsive Design
+
+The game adapts to three viewport ranges using a `useBreakpoint` hook based on `matchMedia('(min-width: 768px)')`.
+
+### Mobile (<768px)
+
+A bottom tab bar replaces the sidebar, with four tabs:
+
+| Tab | Content |
+|-----|---------|
+| Blocs | BlocGrid in compact accordion mode with group headers |
+| Actions | PolicyPicker in compact list mode with selection summary bar |
+| Status | Full-width ResourceSidebar (resources, Central Bank, Colossus, Congress, Rival) + Save controls + Skip turn reports toggle |
+| News | NewsLog at full height |
+
+All four tab content areas remain mounted (CSS `hidden`) to preserve state across tab switches. This is critical for PolicyPicker selection persistence.
+
+Key mobile adaptations:
+- **Compact header:** "MIRANDA" title, phase badge, turn counter. Save controls and date move to Status tab.
+- **Compact BlocCards:** Single row with emoji, name, loyalty value, power value. Tap to expand accordion with full bars and mood text.
+- **Compact PolicyCards:** Single row with category color dot, name, cost badge, checkbox. Tap name for PolicyDetailSheet bottom sheet.
+- **PolicyDetailSheet:** Bottom sheet overlay (70vh max) showing full policy details with Select/Deselect button.
+- **Bottom nav:** Fixed at bottom with inline SVG icons, cyan active indicator bar, pulse ring on Actions tab during action phase.
+- **Scrollable modals:** All modal overlays use `overflow-y-auto` so long content (like Crisis difficulty inauguration) is scrollable on small screens.
+
+### Tablet (768-1023px)
+
+Uses the desktop sidebar layout. The sidebar width stays at `w-56` and the content area adapts to the remaining space.
+
+### Desktop (>=1024px)
+
+Full sidebar + main content layout. Bloc cards render in a responsive grid (up to 5 columns at wide viewports) with group section headers (State Power, Capital, Culture, Labor, Shadow). Cards have subtle hover lift effect (`hover:-translate-y-0.5`).
+
+### Skip Turn Reports
+
+A `skipBriefings` toggle (stored in GameState, persists across saves) allows players to auto-dismiss turn report modals. Default is off (meditative pacing). When enabled, `TurnBriefing` never appears. The auto-advance countdown timer was removed entirely. Turn reports now wait for the player to click "Continue" or press Enter/Space/Escape.
+
+### Touch Support
+
+Tooltips support touch devices via long-press (500ms hold to show, release to dismiss). This is critical because hover tooltips don't exist on touch devices.
+
+### Design Rationale
+
+Bottom tabs (not hamburger menu) because the game has 3-4 distinct content areas that need instant switching, resources are gameplay-critical and shouldn't be hidden, bottom tabs match the thumb zone, and game phases map naturally to tab highlighting.
+
+CSS `hidden` class (not conditional rendering) for tab content because PolicyPicker selection state must persist when switching tabs to check resources or blocs.
+
+`100dvh` instead of `100vh` because mobile Safari's address bar changes viewport height, and `dvh` units account for this.
+
+No new dependencies added. Everything uses Tailwind utilities, CSS transitions, and vanilla React state.
 
 ---
 
@@ -1271,6 +1329,24 @@ Small colored arrows next to each resource value show the direction of change fr
 ---
 
 ## Changelog
+
+### v1.3 (February 2026)
+- Mobile-responsive redesign with bottom tab navigation (Blocs, Actions, Status, News)
+- Compact BlocCard accordion mode for mobile with group headers (State Power, Capital, Culture, Labor, Shadow)
+- Compact PolicyCard list mode for mobile with PolicyDetailSheet bottom sheet
+- Fullwidth ResourceSidebar variant for mobile Status tab
+- Skip turn reports toggle (persists across saves, default off)
+- Turn report auto-advance timer removed (manual "Continue" only)
+- "New Game" button now returns to difficulty selection screen
+- Difficulty-specific Day One Briefing narratives (Story, Standard, Crisis)
+- Scrollable modal overlays for small viewports
+- Touch tooltip support via long-press (500ms)
+- Accent gradient line on EventModal and BlocTargetModal
+- Hover lift effect on desktop BlocCards
+- Bloc group headers on desktop BlocGrid
+- Selection summary bar on PolicyPicker (both mobile and desktop)
+- `useBreakpoint` hook using `matchMedia` for responsive rendering
+- New components: MobileLayout, MobileBottomNav, PolicyDetailSheet, SaveControls
 
 ### v1.2 (February 2026)
 - Day One "Inauguration Day" briefing with narrative introduction and rival name

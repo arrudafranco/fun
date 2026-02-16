@@ -1,6 +1,10 @@
 import { useGameStore } from '../hooks/useGameStore';
 
-export default function NewsLog() {
+interface NewsLogProps {
+  fullHeight?: boolean;
+}
+
+export default function NewsLog({ fullHeight }: NewsLogProps) {
   const newsLog = useGameStore(s => s.newsLog);
   const reversed = [...newsLog].reverse();
 
@@ -12,7 +16,7 @@ export default function NewsLog() {
       <div
         role="log"
         aria-label="News log"
-        className="max-h-52 overflow-y-auto rounded bg-slate-900 border border-slate-700/50 p-3 space-y-1"
+        className={`${fullHeight ? '' : 'max-h-52'} overflow-y-auto rounded bg-slate-900 border border-slate-700/50 p-3 space-y-1`}
       >
         {reversed.length === 0 && (
           <p className="text-xs text-slate-500 italic">No news yet.</p>

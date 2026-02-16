@@ -28,7 +28,10 @@ import { generateBriefingItems } from './briefing';
 const SAVE_KEY = 'miranda-save';
 
 export interface GameStore extends GameState {
+  gameStarted: boolean;
   initGame: (difficulty?: Difficulty) => void;
+  resetToMenu: () => void;
+  setSkipBriefings: (skip: boolean) => void;
   processFullTurn: (actions: ActionChoice[]) => void;
   advancePhase: () => void;
   getState: () => GameState;
@@ -82,6 +85,7 @@ function createInitialState(difficulty: Difficulty = 'standard'): GameState {
     newlyUnlockedPolicyIds: [],
     briefingItems: [],
     showBriefing: false,
+    skipBriefings: false,
     showDayOneBriefing: true,
     newsLog: [],
     previousResources: null,
@@ -466,7 +470,7 @@ function submitActionsImpl(state: GameState, actions: ActionChoice[]): void {
   // Generate turn briefing
   const briefing = generateBriefingItems(state);
   state.briefingItems = briefing;
-  state.showBriefing = briefing.length > 0;
+  state.showBriefing = briefing.length > 0 && !state.skipBriefings;
 
   const ending = checkWinLossConditions(state);
   if (ending) {
@@ -621,13 +625,27 @@ function processFullTurnImpl(state: GameState, actions: ActionChoice[]): void {
 
 export const useGameStore = create<GameStore>((set, get) => ({
   ...createInitialState(),
+  gameStarted: false,
 
   initGame: (difficulty: Difficulty = 'standard') => {
+    const prevSkipBriefings = get().skipBriefings;
     const state = createInitialState(difficulty);
+    state.skipBriefings = prevSkipBriefings;
     state.congress.seatShares = calculateSeatShares(state);
     state.congress.friendlyMajority = hasFriendlyMajority(state);
     startNewsPhaseImpl(state);
-    set(state);
+    set({ ...state, gameStarted: true });
+  },
+
+  resetToMenu: () => {
+    const prevSkipBriefings = get().skipBriefings;
+    const state = createInitialState();
+    state.skipBriefings = prevSkipBriefings;
+    set({ ...state, gameStarted: false });
+  },
+
+  setSkipBriefings: (skip: boolean) => {
+    set({ skipBriefings: skip });
   },
 
   processFullTurn: (actions: ActionChoice[]) => {
@@ -696,7 +714,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   saveGame: () => {
-    const { initGame, processFullTurn, advancePhase, getState, startNewsPhase, resolveCurrentEvent, submitActions, dismissBriefing, dismissDayOneBriefing, saveGame, loadGame, hasSavedGame, deleteSave, ...state } = get();
+    const { initGame, resetToMenu, setSkipBriefings, gameStarted, processFullTurn, advancePhase, getState, startNewsPhase, resolveCurrentEvent, submitActions, dismissBriefing, dismissDayOneBriefing, saveGame, loadGame, hasSavedGame, deleteSave, ...state } = get();
     // Replace currentEvent with its ID for serialization (condition functions aren't serializable)
     const serializable = {
       ...state,
@@ -736,7 +754,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       if (!saved.briefingItems) saved.briefingItems = [];
       if (saved.showBriefing === undefined) saved.showBriefing = false;
       if (saved.showDayOneBriefing === undefined) saved.showDayOneBriefing = false;
-      set(saved as GameState);
+      if (saved.skipBriefings === undefined) saved.skipBriefings = false;
+      set({ ...(saved as GameState), gameStarted: true });
       return true;
     } catch {
       return false;
@@ -760,7 +779,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   getState: () => {
-    const { initGame, processFullTurn, advancePhase, getState, startNewsPhase, resolveCurrentEvent, submitActions, dismissBriefing, dismissDayOneBriefing, saveGame, loadGame, hasSavedGame, deleteSave, ...state } = get();
+    const { initGame, resetToMenu, setSkipBriefings, gameStarted, processFullTurn, advancePhase, getState, startNewsPhase, resolveCurrentEvent, submitActions, dismissBriefing, dismissDayOneBriefing, saveGame, loadGame, hasSavedGame, deleteSave, ...state } = get();
     return state as GameState;
   },
 }));

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { BlocId } from '../types/blocs';
 import { useGameStore } from '../hooks/useGameStore';
 import { BLOC_DEFINITIONS } from '../data/blocs';
@@ -132,17 +133,94 @@ function getLoyaltyColor(loyalty: number): string {
   return 'bg-rose-400';
 }
 
-interface BlocCardProps {
-  blocId: BlocId;
+function getLoyaltyTextColor(loyalty: number): string {
+  if (loyalty >= 60) return 'text-emerald-400';
+  if (loyalty >= 30) return 'text-amber-300';
+  return 'text-rose-400';
 }
 
-export default function BlocCard({ blocId }: BlocCardProps) {
+interface BlocCardProps {
+  blocId: BlocId;
+  compact?: boolean;
+}
+
+export default function BlocCard({ blocId, compact }: BlocCardProps) {
   const bloc = useGameStore(s => s.blocs[blocId]);
   const def = BLOC_DEFINITIONS[blocId];
+  const [expanded, setExpanded] = useState(false);
+
+  if (compact) {
+    return (
+      <div className="rounded-lg bg-slate-800/80 border border-slate-600/30 overflow-hidden">
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="w-full flex items-center gap-2 px-3 py-2.5 min-h-[44px] text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-inset"
+          aria-expanded={expanded}
+          aria-label={`${def.name} bloc, loyalty ${bloc.loyalty}, power ${bloc.power}`}
+        >
+          <span className="text-base" aria-hidden="true">{BLOC_EMOJI[blocId]}</span>
+          <span className="text-sm font-medium text-slate-200 flex-1 truncate">{def.name}</span>
+          <span className={`text-sm font-semibold tabular-nums ${getLoyaltyTextColor(bloc.loyalty)}`}>
+            {bloc.loyalty}
+          </span>
+          <span className="text-xs text-slate-500 tabular-nums w-8 text-right">
+            P{bloc.power}
+          </span>
+          <svg
+            className={`w-3.5 h-3.5 text-slate-500 transition-transform ${expanded ? 'rotate-180' : ''}`}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            aria-hidden="true"
+          >
+            <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+
+        <div
+          className={`overflow-hidden transition-all duration-200 ${expanded ? 'max-h-40' : 'max-h-0'}`}
+        >
+          <div className="px-3 pb-3 pt-1 space-y-2">
+            {/* Loyalty bar */}
+            <div>
+              <div className="flex justify-between text-[10px] text-slate-400 mb-0.5">
+                <span>Loyalty</span>
+                <span>{bloc.loyalty}</span>
+              </div>
+              <div className="h-2.5 bg-slate-700 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${getLoyaltyColor(bloc.loyalty)}`}
+                  style={{ width: `${bloc.loyalty}%` }}
+                />
+              </div>
+            </div>
+            {/* Power bar */}
+            <div>
+              <div className="flex justify-between text-[10px] text-slate-400 mb-0.5">
+                <span>Power</span>
+                <span>{bloc.power}</span>
+              </div>
+              <div className="h-2.5 bg-slate-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500 bg-sky-400/70"
+                  style={{ width: `${bloc.power}%` }}
+                />
+              </div>
+            </div>
+            {/* Mood */}
+            <p className="text-[11px] text-slate-400 italic leading-snug">
+              {getMoodText(blocId, bloc.loyalty)}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Tooltip text={def.tooltip}>
-      <article className="rounded-xl p-4 shadow-md shadow-black/30 bg-slate-800/90 border border-slate-600/40 hover:border-slate-500/60 transition-colors" aria-label={`${def.name} bloc`}>
+      <article className="rounded-xl p-4 shadow-md shadow-black/30 bg-slate-800/90 border border-slate-600/40 hover:border-slate-500/60 hover:-translate-y-0.5 hover:shadow-lg transition-all" aria-label={`${def.name} bloc`}>
         <div className="flex items-center gap-2 mb-3">
           <span className="text-lg" aria-hidden="true">{BLOC_EMOJI[blocId]}</span>
           <h3 className="text-sm font-semibold text-slate-100 truncate">{def.name}</h3>

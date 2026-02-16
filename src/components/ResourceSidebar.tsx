@@ -5,6 +5,7 @@ import Tooltip from './Tooltip';
 import ColossusPanel from './ColossusPanel';
 import CongressPanel from './CongressPanel';
 import RivalBar from './RivalBar';
+import SaveControls from './SaveControls';
 
 interface ResourceDef {
   key: keyof ResourceState;
@@ -106,19 +107,133 @@ function getDynamicTooltip(
   }
 }
 
-export default function ResourceSidebar() {
+interface ResourceSidebarProps {
+  variant?: 'sidebar' | 'fullwidth';
+}
+
+export default function ResourceSidebar({ variant = 'sidebar' }: ResourceSidebarProps) {
   const resources = useGameStore(s => s.resources);
   const previousResources = useGameStore(s => s.previousResources);
   const centralBankIndependence = useGameStore(s => s.centralBankIndependence);
   const difficulty = useGameStore(s => s.difficulty);
+  const skipBriefings = useGameStore(s => s.skipBriefings);
+  const setSkipBriefings = useGameStore(s => s.setSkipBriefings);
   const config = getDifficultyConfig(difficulty);
   const baseIncome = config.baseCapitalIncome;
   const colossus = useGameStore(s => s.colossus);
-  // Trade income: base 10 * (tradeDependency/100), halved if alignment < 30
   const rawTrade = Math.round(10 * (colossus.tradeDependency / 100));
   const tradeIncome = colossus.alignment < 30 ? Math.round(rawTrade * 0.5) : rawTrade;
   const totalIncome = baseIncome + tradeIncome;
 
+  const isFullwidth = variant === 'fullwidth';
+  const barHeight = isFullwidth ? 'h-3' : 'h-2';
+
+  if (isFullwidth) {
+    return (
+      <div className="p-4 flex flex-col gap-4">
+        {/* Save controls at top on mobile */}
+        <div className="rounded-xl p-3 bg-slate-800 border border-slate-600/40">
+          <SaveControls />
+        </div>
+
+        {/* Skip briefings toggle */}
+        <div className="rounded-xl p-3 bg-slate-800 border border-slate-600/40">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={skipBriefings}
+              onChange={(e) => setSkipBriefings(e.target.checked)}
+              className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-cyan-500 focus:ring-cyan-500 focus:ring-offset-slate-900"
+            />
+            <div>
+              <span className="text-sm text-slate-300">Skip turn reports</span>
+              <span className="block text-[10px] text-slate-500">(You can always re-enable this)</span>
+            </div>
+          </label>
+        </div>
+
+        {/* Resources in 2-column grid */}
+        <div className="rounded-xl p-4 bg-slate-800 border border-slate-600/40">
+          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 font-pixel">
+            Resources
+          </h2>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+            {RESOURCE_DEFS.map(r => {
+              const value = resources[r.key];
+              const pct = Math.min((value / r.max) * 100, 100);
+              const tip = getDynamicTooltip(r.key, value, resources, totalIncome, baseIncome, tradeIncome, colossus.alignment, centralBankIndependence, config.coupDreadThreshold);
+              const prevValue = previousResources ? previousResources[r.key] : undefined;
+              const trend = getTrendArrow(r.key, value, prevValue);
+
+              return (
+                <Tooltip key={r.key} text={tip}>
+                  <div>
+                    <div className="flex justify-between text-xs text-slate-400 mb-1">
+                      <span id={`resource-${r.key}-label-fw`}>{r.label}</span>
+                      <span className="flex items-center gap-1">
+                        {trend && (
+                          <>
+                            <span className={`text-[10px] leading-none ${trend.colorClass}`} aria-hidden="true">{trend.symbol}</span>
+                            <span className="sr-only">{r.label} {trend.srText}</span>
+                          </>
+                        )}
+                        {value}{r.max <= 100 ? '' : `/${r.max}`}
+                      </span>
+                    </div>
+                    <div
+                      className={`${barHeight} bg-slate-700 rounded-full overflow-hidden`}
+                      role="progressbar"
+                      aria-valuenow={value}
+                      aria-valuemin={0}
+                      aria-valuemax={r.max}
+                      aria-labelledby={`resource-${r.key}-label-fw`}
+                    >
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${r.color}${r.key === 'narrative' && value < 30 ? ' animate-narrative-flicker' : ''}`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                </Tooltip>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Central Bank */}
+        <div className="rounded-xl p-3 bg-slate-800 border border-teal-400/30 shadow-md shadow-teal-900/20">
+          <h3 className="text-xs font-semibold text-teal-300 uppercase tracking-wider mb-2 font-pixel">
+            Central Bank
+          </h3>
+          <Tooltip text="How independent is the central bank from your government. High independence stabilizes Banks but limits your monetary tools.">
+            <div className="flex justify-between text-xs text-slate-400 mb-1">
+              <span id="cbi-label-fw">Independence</span>
+              <span>{centralBankIndependence}</span>
+            </div>
+          </Tooltip>
+          <div
+            className={`${barHeight} bg-slate-700 rounded-full overflow-hidden`}
+            role="progressbar"
+            aria-valuenow={centralBankIndependence}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-labelledby="cbi-label-fw"
+          >
+            <div
+              className="h-full rounded-full transition-all duration-500 bg-teal-300"
+              style={{ width: `${centralBankIndependence}%` }}
+            />
+          </div>
+        </div>
+
+        <ColossusPanel />
+        <CongressPanel />
+        <RivalBar />
+      </div>
+    );
+  }
+
+  // Default sidebar variant
   return (
     <aside className="w-56 flex-shrink-0 bg-slate-900 border-r border-slate-700/50 p-4 flex flex-col gap-3 overflow-y-auto">
       <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 font-pixel">
@@ -207,6 +322,20 @@ export default function ResourceSidebar() {
 
       <hr className="border-slate-700/50 my-1" />
       <RivalBar />
+
+      {/* Skip briefings toggle */}
+      <hr className="border-slate-700/50 my-1" />
+      <label className="flex items-center gap-2 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={skipBriefings}
+          onChange={(e) => setSkipBriefings(e.target.checked)}
+          className="w-3.5 h-3.5 rounded border-slate-600 bg-slate-700 text-cyan-500 focus:ring-cyan-500 focus:ring-offset-slate-900"
+        />
+        <div>
+          <span className="text-xs text-slate-400">Skip turn reports</span>
+        </div>
+      </label>
     </aside>
   );
 }

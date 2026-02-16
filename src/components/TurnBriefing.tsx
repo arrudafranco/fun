@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useGameStore } from '../hooks/useGameStore';
 import type { BriefingItemType } from '../types/game';
 
@@ -36,27 +36,14 @@ export default function TurnBriefing() {
   const turn = useGameStore(s => s.turn);
   const dialogRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const [countdown, setCountdown] = useState(8);
 
   // Auto-focus button when modal opens
   useEffect(() => {
     if (showBriefing) {
-      setCountdown(8);
       const id = requestAnimationFrame(() => buttonRef.current?.focus());
       return () => cancelAnimationFrame(id);
     }
   }, [showBriefing]);
-
-  // Auto-advance countdown
-  useEffect(() => {
-    if (!showBriefing) return;
-    if (countdown <= 0) {
-      dismissBriefing();
-      return;
-    }
-    const timer = setTimeout(() => setCountdown(c => c - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [showBriefing, countdown, dismissBriefing]);
 
   const handleDismiss = useCallback(() => {
     dismissBriefing();
@@ -76,7 +63,7 @@ export default function TurnBriefing() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="briefing-title"
@@ -85,7 +72,7 @@ export default function TurnBriefing() {
     >
       <div
         ref={dialogRef}
-        className="bg-slate-900 border border-slate-600 rounded-2xl shadow-2xl max-w-lg w-full mx-4 overflow-hidden"
+        className="bg-slate-900 border border-slate-600 rounded-2xl shadow-2xl max-w-lg w-full mx-4 my-4 overflow-hidden shrink-0"
         onClick={e => e.stopPropagation()}
       >
         {/* Top accent line */}
@@ -142,18 +129,13 @@ export default function TurnBriefing() {
             })}
           </div>
 
-          <div className="flex items-center justify-between">
-            <button
-              ref={buttonRef}
-              onClick={handleDismiss}
-              className="px-6 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500"
-            >
-              Continue
-            </button>
-            <span className="text-xs text-slate-600" aria-live="polite">
-              Auto-advancing in {countdown}s
-            </span>
-          </div>
+          <button
+            ref={buttonRef}
+            onClick={handleDismiss}
+            className="px-6 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500"
+          >
+            Continue
+          </button>
         </div>
       </div>
     </div>

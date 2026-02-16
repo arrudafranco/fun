@@ -142,6 +142,7 @@ export interface GameState {
   // Turn briefing
   briefingItems: BriefingItem[];
   showBriefing: boolean;
+  skipBriefings: boolean;
 
   // Day One briefing (shown once after difficulty selection)
   showDayOneBriefing: boolean;

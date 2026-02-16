@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 const TUTORIAL_KEY = 'miranda-tutorial-seen';
 
 interface TutorialStep {
   title: string;
   body: string;
+  mobileBody?: string;
 }
 
 const STEPS: TutorialStep[] = [
@@ -15,10 +17,12 @@ const STEPS: TutorialStep[] = [
   {
     title: 'Resources',
     body: 'The sidebar tracks your political resources. Legitimacy keeps you in power. Capital funds your policies (you earn a base income each turn, plus trade income). Narrative shapes public opinion. Polarization makes everything harder. Keep an eye on all of them.',
+    mobileBody: 'The Status tab tracks your political resources. Legitimacy keeps you in power. Capital funds your policies (you earn a base income each turn, plus trade income). Narrative shapes public opinion. Polarization makes everything harder. Keep an eye on all of them.',
   },
   {
-    title: 'The Sidebar',
+    title: 'Key Panels',
     body: "Below your resources, you'll find three key panels. The Central Bank tracks how independent Miranda's monetary policy is... high independence pleases the Banks but limits your economic tools. The Colossus is the superpower watching Miranda's every move. And Congress tracks your legislative support.",
+    mobileBody: "In the Status tab, you'll find three key panels below your resources. The Central Bank tracks how independent Miranda's monetary policy is... high independence pleases the Banks but limits your economic tools. The Colossus is the superpower watching Miranda's every move. And Congress tracks your legislative support.",
   },
   {
     title: 'Congress',
@@ -35,6 +39,7 @@ const STEPS: TutorialStep[] = [
   {
     title: 'Your Turn',
     body: 'Each turn, a news event may occur. Then you choose policies to enact. Hover over a policy card to see its full effects. After that, the blocs, the Rival, and the Colossus react. Choose wisely... every action has consequences.',
+    mobileBody: 'Each turn, a news event may occur. Then you choose policies to enact. Tap a policy name to see its full effects. After that, the blocs, the Rival, and the Colossus react. Choose wisely... every action has consequences.',
   },
   {
     title: 'Policy Categories',
@@ -58,6 +63,7 @@ interface TutorialOverlayProps {
 export default function TutorialOverlay({ forceShow, onClose }: TutorialOverlayProps) {
   const [visible, setVisible] = useState(false);
   const [step, setStep] = useState(0);
+  const { isMobile } = useBreakpoint();
 
   useEffect(() => {
     if (forceShow) {
@@ -99,6 +105,7 @@ export default function TutorialOverlay({ forceShow, onClose }: TutorialOverlayP
   if (!visible) return null;
 
   const current = STEPS[step];
+  const bodyText = (isMobile && current.mobileBody) ? current.mobileBody : current.body;
 
   return (
     <div
@@ -122,7 +129,7 @@ export default function TutorialOverlay({ forceShow, onClose }: TutorialOverlayP
 
         {/* Content */}
         <h2 className="text-lg font-bold text-cyan-300 mb-3">{current.title}</h2>
-        <p className="text-sm text-slate-300 leading-relaxed mb-6">{current.body}</p>
+        <p className="text-sm text-slate-300 leading-relaxed mb-6">{bodyText}</p>
 
         {/* Navigation */}
         <div className="flex items-center justify-between">
